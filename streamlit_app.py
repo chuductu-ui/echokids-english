@@ -180,8 +180,8 @@ def load_profiles():
     conn.close()
     if not profiles:
         return [
-            {"id": 1, "name": "Bunny Leo", "age": 7, "avatar": "🐰", "color_theme": "amber", "daily_goal": 8, "streak_days": 3, "last_study_date": ""},
-            {"id": 2, "name": "Alex Rocket", "age": 11, "avatar": "🚀", "color_theme": "indigo", "daily_goal": 12, "streak_days": 5, "last_study_date": ""}
+            {"id": 1, "name": "Bunny Jolie", "age": 7, "avatar": "🐰", "color_theme": "amber", "daily_goal": 8, "streak_days": 3, "last_study_date": ""},
+            {"id": 2, "name": "Puppy Flora", "age": 11, "avatar": "🐶", "color_theme": "indigo", "daily_goal": 12, "streak_days": 5, "last_study_date": ""}
         ]
     return profiles
 
@@ -332,20 +332,22 @@ with st.sidebar:
     
     st.divider()
     
-    # Google Drive Sync Status in Sidebar
+    # Google Drive Sync Status in Sidebar (Zero-Click Auto-Sync)
     st.subheader("☁️ Google Drive Sync")
     latest_backup_file = os.path.join(ARCHIVE_DIR, "echokids_online_backup_latest.json")
-    if os.path.exists(latest_backup_file):
-        mtime = datetime.fromtimestamp(os.stat(latest_backup_file).st_mtime).strftime("%H:%M:%S (%b %d)")
-        st.success(f"Synced to Drive: {mtime}")
-    else:
-        st.info("Sync active upon first action")
+    if not os.path.exists(latest_backup_file):
+        sync_to_google_drive_archive()
         
-    if st.button("🔄 Sync Now to Google Drive"):
-        ok, msg = sync_to_google_drive_archive()
-        if ok:
-            st.toast("✅ Synced with Google Drive successfully!")
-            st.rerun()
+    mtime = datetime.fromtimestamp(os.stat(latest_backup_file).st_mtime).strftime("%H:%M:%S (%b %d)")
+    st.success(f"🟢 **Tự động đồng bộ: BẬT**\n\n*Lần đồng bộ gần nhất: {mtime}*")
+    st.caption("⚡ Mọi từ mới và lượt ôn tập SRS được hệ thống **tự động lưu lên Google Drive ngay lập tức**, không cần bấm bất kỳ nút nào.")
+    
+    with st.expander("🛠️ Sao lưu thủ công (Tùy chọn)"):
+        if st.button("🔄 Bấm để đồng bộ ngay", use_container_width=True):
+            ok, msg = sync_to_google_drive_archive()
+            if ok:
+                st.toast("✅ Đã đồng bộ lên Google Drive thành công!")
+                st.rerun()
 
 # --- Top Header & Live Metric Counters ---
 counts = get_profile_counts(pid)
@@ -607,17 +609,20 @@ with tab_gdrive:
         st.link_button("📁 Open Target Google Drive Folder", folder_url, use_container_width=True)
     
     st.markdown("""
-    ### How Google Drive Synchronization Works:
+    ### ⚡ Cơ chế tự động đồng bộ Google Drive (100% Zero-Click):
     
-    1. **Live Google Sheet in Your Specified Folder**:
-       - The spreadsheet **`EchoKids English - Learning Database`** is safely stored in your dedicated folder:
-         [**View Folder**](https://drive.google.com/drive/folders/1OfwAewoRPK-xGAH_O-UUQk577GK3XymP?authuser=tucd).
-       - You can open it on your smartphone or PC anytime to view or bulk-add new collocations!
-    2. **Deploying on Streamlit Community Cloud (`share.streamlit.io`)**:
-       - When you deploy this repository to free Streamlit Cloud, it runs **24/7 online**.
-       - Your kids can open `https://echokids-english.streamlit.app` on their iPad without your PC being on!
-    3. **Continuous Google Drive Folder Sync**:
-       - All cards and review history are also automatically backed up to [`online_archive/`](file:///G:/My%20Drive/CODE/8.%20English/online_archive/) and synced across your devices via Google Drive.
+    1. **Tự động đồng bộ thời gian thực (Không cần bấm nút)**:
+       - Mỗi khi bé ôn tập thẻ (bấm *Practice Again*, *Good*, hay *Super Easy*), hệ thống **tự động** tính toán lại thuật toán Spaced Repetition và ghi ngay vào file sao lưu Google Drive.
+       - Khi ba/mẹ thêm từ vựng, cụm từ, câu mới tại tab **Daily Input**, hệ thống **tự động** nạp vào kho và đồng bộ ngay lên Google Drive.
+       - Thư mục sao lưu `online_archive/` nằm trực tiếp trong Google Drive (`G:\\My Drive\\CODE\\8. English\\online_archive`) được Google Drive Desktop đồng bộ lên đám mây liên tục.
+    
+    2. **Bảng tính Google Spreadsheet trực tuyến**:
+       - Bảng tính **`EchoKids English - Learning Database`** nằm an toàn trong thư mục Google Drive của anh:
+         [**Xem thư mục Google Drive**](https://drive.google.com/drive/folders/1OfwAewoRPK-xGAH_O-UUQk577GK3XymP?authuser=tucd).
+       - Đã cập nhật 2 hồ sơ học tập: **Bunny Jolie** (7 tuổi) và **Puppy Flora** (11 tuổi).
+    
+    3. **Hoạt động 24/7 trên Streamlit Cloud (`share.streamlit.io`)**:
+       - Ứng dụng chạy trực tiếp trên cloud, các con mở trên iPad/iPhone/tablet học mọi lúc mọi nơi mà **không cần bật máy tính cá nhân**.
     """)
     
     # Download current backup button

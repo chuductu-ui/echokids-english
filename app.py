@@ -113,13 +113,13 @@ def init_db():
     if cursor.fetchone()[0] == 0:
         cursor.execute("""
         INSERT INTO profiles (name, age, avatar, color_theme, daily_goal, streak_days, last_study_date)
-        VALUES ('Bunny Leo', 7, '🐰', 'amber', 8, 3, ?)
+        VALUES ('Bunny Jolie', 7, '🐰', 'amber', 8, 3, ?)
         """, (date.today().isoformat(),))
         kid1_id = cursor.lastrowid
         
         cursor.execute("""
         INSERT INTO profiles (name, age, avatar, color_theme, daily_goal, streak_days, last_study_date)
-        VALUES ('Alex Rocket', 11, '🚀', 'indigo', 12, 5, ?)
+        VALUES ('Puppy Flora', 11, '🐶', 'indigo', 12, 5, ?)
         """, (date.today().isoformat(),))
         kid2_id = cursor.lastrowid
         conn.commit()

@@ -1,10 +1,10 @@
 {
-  "snapshot_timestamp": "2026-10-05T14:21:03.292213",
+  "synced_at": "2026-10-05T19:24:18.410573",
   "total_items": 29,
   "profiles": [
     {
       "id": 1,
-      "name": "Bunny Leo",
+      "name": "Bunny Jolie",
       "age": 7,
       "avatar": "🐰",
       "color_theme": "amber",
@@ -14,9 +14,9 @@
     },
     {
       "id": 2,
-      "name": "Alex Rocket",
+      "name": "Puppy Flora",
       "age": 11,
-      "avatar": "🚀",
+      "avatar": "🐶",
       "color_theme": "indigo",
       "daily_goal": 12,
       "streak_days": 5,
