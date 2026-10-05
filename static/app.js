@@ -1009,3 +1009,105 @@ function escapeJsString(str) {
   if (!str) return '';
   return str.replace(/'/g, "\\'").replace(/"/g, '\\"');
 }
+
+// ==========================================
+// Speech-to-Text for Form Inputs (Web Speech API)
+// ==========================================
+let activeSttRecognition = null;
+
+function startVoiceInput(lang, targetInputId, btnId) {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    alert("Trình duyệt hiện tại chưa hỗ trợ Web Speech API. Vui lòng mở bằng Google Chrome, Safari (iPad/iPhone), hoặc Microsoft Edge.");
+    return;
+  }
+
+  const inputEl = document.getElementById(targetInputId);
+  const btnEl = document.getElementById(btnId);
+  const statusEl = document.getElementById(lang === 'en-US' ? 'sttStatusEng' : 'sttStatusViet');
+
+  if (activeSttRecognition) {
+    try { activeSttRecognition.abort(); } catch(e){}
+    activeSttRecognition = null;
+  }
+
+  const recognition = new SpeechRecognition();
+  recognition.lang = lang;
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+
+  if (btnEl) {
+    btnEl.classList.add('text-orange-600', 'bg-orange-100', 'animate-pulse');
+  }
+  if (statusEl) {
+    statusEl.classList.remove('hidden');
+  }
+
+  recognition.onstart = () => {
+    console.log(`Speech recognition started for ${lang}`);
+  };
+
+  recognition.onresult = (event) => {
+    const transcript = event.results[0][0].transcript;
+    if (transcript && inputEl) {
+      if (inputEl.value.trim().length > 0) {
+        inputEl.value = inputEl.value.trim() + " " + transcript;
+      } else {
+        inputEl.value = transcript;
+      }
+      playChime('success');
+    }
+  };
+
+  recognition.onerror = (event) => {
+    console.warn("Speech recognition error:", event.error);
+    if (event.error === 'not-allowed') {
+      alert("Microphone bị chặn. Vui lòng cấp quyền micro cho trình duyệt.");
+    }
+  };
+
+  recognition.onend = () => {
+    if (btnEl) {
+      btnEl.classList.remove('text-orange-600', 'bg-orange-100', 'animate-pulse');
+    }
+    if (statusEl) {
+      statusEl.classList.add('hidden');
+    }
+    activeSttRecognition = null;
+  };
+
+  activeSttRecognition = recognition;
+  recognition.start();
+}
+
+// ==========================================
+// QR Code Modal for Mobile / iPad
+// ==========================================
+function toggleQrModal(show) {
+  const modal = document.getElementById("qrModal");
+  if (!modal) return;
+  if (show === undefined) {
+    modal.classList.toggle("hidden");
+  } else if (show) {
+    modal.classList.remove("hidden");
+  } else {
+    modal.classList.add("hidden");
+  }
+}
+
+function copyAppUrl() {
+  const url = (window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1'))
+    ? 'https://echokids-english.streamlit.app'
+    : window.location.href;
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = document.getElementById("btnCopyAppUrl");
+    if (btn) {
+      btn.innerText = "✅ Đã sao chép link!";
+      setTimeout(() => {
+        btn.innerText = "📋 Sao chép link trang web";
+      }, 2000);
+    }
+  }).catch(() => {
+    prompt("Sao chép đường link bên dưới:", url);
+  });
+}

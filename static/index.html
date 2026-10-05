@@ -104,6 +104,12 @@
           <i data-lucide="line-chart" class="w-4 h-4"></i>
           <span>Parent Analytics</span>
         </button>
+
+        <!-- QR Code Login Button for iPad / Mobile -->
+        <button onclick="toggleQrModal(true)" class="px-3 py-2 rounded-xl text-sm font-bold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 flex items-center space-x-1.5 transition shadow-sm" title="Quét mã QR để mở trên iPad / iPhone">
+          <i data-lucide="qr-code" class="w-4 h-4 text-emerald-600"></i>
+          <span class="hidden sm:inline">📱 QR iPad</span>
+        </button>
       </div>
 
     </div>
@@ -185,11 +191,6 @@
             <input type="checkbox" id="chkAudioFirst" checked class="sr-only peer" onchange="toggleAudioFirstMode(this.checked)">
             <div class="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-orange-500 relative"></div>
           </label>
-          <!-- Speech Accent Selector -->
-          <select id="voiceAccentSelect" class="text-xs font-semibold bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-slate-700 outline-none">
-            <option value="en-US">🇺🇸 US English</option>
-            <option value="en-GB">🇬🇧 British English</option>
-          </select>
         </div>
       </div>
 
@@ -231,18 +232,42 @@
 
         <form id="addItemForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
           
-          <!-- English Text Input -->
+          <!-- English Text Input with Speech-to-Text -->
           <div>
-            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">English text *</label>
-            <input type="text" id="inputEnglish" required placeholder="Nhập từ hoặc câu tiếng Anh..." 
-              class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition text-base">
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">English text *</label>
+              <span class="text-[11px] text-slate-400 font-medium">Bấm 🎙️ để nói tiếng Anh</span>
+            </div>
+            <div class="relative flex items-center">
+              <input type="text" id="inputEnglish" required placeholder="Nhập hoặc nói từ/câu tiếng Anh..." 
+                class="w-full pl-4 pr-12 py-3 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition text-base">
+              <button type="button" id="btnSttEng" onclick="startVoiceInput('en-US', 'inputEnglish', 'btnSttEng')" title="Nói tiếng Anh để tự động điền" class="absolute right-2 p-2 rounded-xl text-slate-400 hover:text-orange-600 hover:bg-orange-50 active:scale-90 transition">
+                <i data-lucide="mic" class="w-5 h-5"></i>
+              </button>
+            </div>
+            <div id="sttStatusEng" class="hidden text-xs text-orange-600 font-semibold mt-1.5 flex items-center space-x-1.5">
+              <span class="inline-block w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span>
+              <span>Đang lắng nghe tiếng Anh... Hãy nói vào micro!</span>
+            </div>
           </div>
 
-          <!-- Vietnamese Meaning -->
+          <!-- Vietnamese Meaning with Speech-to-Text -->
           <div>
-            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Vietnamese meaning *</label>
-            <input type="text" id="inputVietnamese" required placeholder="Nhập nghĩa tiếng Việt..." 
-              class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 focus:bg-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition text-sm">
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">Vietnamese meaning *</label>
+              <span class="text-[11px] text-slate-400 font-medium">Bấm 🎙️ để nói tiếng Việt</span>
+            </div>
+            <div class="relative flex items-center">
+              <input type="text" id="inputVietnamese" required placeholder="Nhập hoặc nói nghĩa tiếng Việt..." 
+                class="w-full pl-4 pr-12 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 focus:bg-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition text-sm">
+              <button type="button" id="btnSttViet" onclick="startVoiceInput('vi-VN', 'inputVietnamese', 'btnSttViet')" title="Nói tiếng Việt để tự động điền" class="absolute right-2 p-2 rounded-xl text-slate-400 hover:text-orange-600 hover:bg-orange-50 active:scale-90 transition">
+                <i data-lucide="mic" class="w-5 h-5"></i>
+              </button>
+            </div>
+            <div id="sttStatusViet" class="hidden text-xs text-orange-600 font-semibold mt-1.5 flex items-center space-x-1.5">
+              <span class="inline-block w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span>
+              <span>Đ đang lắng nghe tiếng Việt... Hãy nói vào micro!</span>
+            </div>
           </div>
 
           <!-- 1 Record Audio Button -->
@@ -394,6 +419,33 @@
     </section>
 
   </main>
+
+  <!-- QR Code Modal for Mobile / iPad -->
+  <div id="qrModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-sm w-full text-center shadow-2xl border border-slate-100 relative animate-in fade-in zoom-in duration-200">
+      <button onclick="toggleQrModal(false)" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 font-bold transition">
+        ✕
+      </button>
+      <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center text-2xl shadow-sm">
+        📱
+      </div>
+      <h3 class="text-xl font-extrabold text-slate-900 kid-font mb-1">Mở trên iPad & iPhone</h3>
+      <p class="text-xs text-slate-500 mb-4">Dùng Camera quét mã QR bên dưới để mở ngay trên điện thoại hoặc máy tính bảng:</p>
+      
+      <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 inline-block shadow-inner mb-4">
+        <img id="qrImageModal" src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=https%3A%2F%2Fechokids-english.streamlit.app" alt="QR Code" class="w-48 h-48 mx-auto rounded-xl shadow-sm">
+      </div>
+
+      <div class="space-y-2">
+        <a href="https://echokids-english.streamlit.app" target="_blank" class="block w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl text-xs transition shadow-md shadow-orange-200">
+          Mở Streamlit Cloud Link 🚀
+        </a>
+        <button onclick="copyAppUrl()" class="block w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs transition" id="btnCopyAppUrl">
+          📋 Sao chép link trang web
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- Audio elements & Scripts -->
   <script src="/static/app.js"></script>

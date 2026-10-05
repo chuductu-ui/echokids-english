@@ -124,8 +124,8 @@ def init_db():
         kid2_id = cursor.lastrowid
         conn.commit()
         
-        # Seed curated items
-        seed_starter_items(conn, kid1_id, kid2_id)
+        # Do not auto-seed sample items so children start fresh
+        # seed_starter_items(conn, kid1_id, kid2_id)
         
     conn.close()
 

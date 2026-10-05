@@ -319,9 +319,16 @@ with st.sidebar:
     
     st.divider()
     
-    # Voice Accent setting
-    voice_accent = st.radio("Model Voice Accent:", ["🇺🇸 American (US)", "🇬🇧 British (UK)"], index=0)
-    tld_code = "com" if "US" in voice_accent else "co.uk"
+    tld_code = "com"
+    
+    st.divider()
+    
+    # QR Code for Mobile / iPad / iPhone
+    st.subheader("📱 Quét QR mở trên iPad / iPhone")
+    cloud_url = "https://echokids-english.streamlit.app"
+    qr_img_url = f"https://api.qrserver.com/v1/create-qr-code/?size=240x240&data={cloud_url}"
+    st.image(qr_img_url, caption="Mở Camera trên iPad/iPhone quét để học ngay", use_container_width=True)
+    st.link_button("🌐 Mở liên kết Cloud", cloud_url, use_container_width=True)
     
     st.divider()
     
@@ -361,12 +368,11 @@ with col4:
 
 st.divider()
 
-# --- Main Tabs ---
-tab_review, tab_input, tab_library, tab_gdrive = st.tabs([
-    "🎧 Daily SRS Review", 
-    "➕ Daily Input", 
-    "📚 Learning Library", 
-    "☁️ Google Drive & Cloud Guide"
+# --- Main Tabs (3 Minimalist Tabs) ---
+tab_review, tab_input, tab_library = st.tabs([
+    "🎧 Ôn tập (SRS Review)", 
+    "➕ Thêm thẻ (Daily Input)", 
+    "📚 Thư viện (My Library)"
 ])
 
 # ==========================================
@@ -438,9 +444,85 @@ with tab_review:
 with tab_input:
     st.subheader(f"➕ Thêm thẻ mới - {active_profile['name']}")
     
+    # Web Speech API Voice Recognition Component
+    st.components.v1.html("""
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #fff7ed; padding: 12px 14px; border-radius: 16px; border: 1.5px solid #fed7aa; margin-bottom: 12px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+        <span style="font-size: 13px; font-weight: 800; color: #9a3412;">🎙️ Nhập bằng giọng nói (Voice Input):</span>
+        <span id="speechIndicator" style="font-size: 11px; font-weight: bold; color: #c2410c; background: #ffedd5; padding: 2px 8px; border-radius: 20px;">Sẵn sàng</span>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button type="button" id="btnEng" onclick="startSpeech('en-US', 'English text *', this)" style="flex: 1; padding: 10px; border-radius: 12px; border: 1px solid #ea580c; background: #ea580c; color: white; font-weight: 800; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+          🎤 Nói tiếng Anh (en-US)
+        </button>
+        <button type="button" id="btnViet" onclick="startSpeech('vi-VN', 'Vietnamese meaning *', this)" style="flex: 1; padding: 10px; border-radius: 12px; border: 1px solid #0284c7; background: #0284c7; color: white; font-weight: 800; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+          🎤 Nói tiếng Việt (vi-VN)
+        </button>
+      </div>
+      <div id="speechResult" style="margin-top: 8px; font-size: 12px; color: #475569; font-weight: 500;">
+        💡 Bấm nút rồi nói vào micro, hệ thống tự động nhận diện và điền vào ô bên dưới.
+      </div>
+    </div>
+
+    <script>
+      function startSpeech(lang, inputLabel, btn) {
+        const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRec) {
+          alert("Trình duyệt chưa hỗ trợ Web Speech API. Vui lòng mở bằng Safari (iPad/iPhone) hoặc Chrome/Edge.");
+          return;
+        }
+        const ind = document.getElementById("speechIndicator");
+        const resBox = document.getElementById("speechResult");
+        const rec = new SpeechRec();
+        rec.lang = lang;
+        rec.interimResults = false;
+        rec.maxAlternatives = 1;
+
+        ind.innerText = "🔴 Đang nghe...";
+        ind.style.background = "#fee2e2";
+        ind.style.color = "#dc2626";
+        resBox.innerHTML = "<i>Đang lắng nghe giọng của bạn, hãy nói to rõ...</i>";
+
+        rec.onresult = function(event) {
+          const text = event.results[0][0].transcript;
+          ind.innerText = "✅ Đã xong";
+          ind.style.background = "#dcfce7";
+          ind.style.color = "#16a34a";
+          resBox.innerHTML = "✅ Đã nhận diện: <b>" + text + "</b>";
+
+          if (navigator.clipboard) {
+            navigator.clipboard.writeText(text);
+          }
+
+          try {
+            const doc = window.parent.document;
+            const inputs = doc.querySelectorAll("input");
+            for (let inp of inputs) {
+              if (inp.getAttribute("aria-label") === inputLabel) {
+                inp.value = text;
+                inp.dispatchEvent(new Event('input', { bubbles: true }));
+                inp.dispatchEvent(new Event('change', { bubbles: true }));
+                break;
+              }
+            }
+          } catch(e) {}
+        };
+
+        rec.onerror = function(err) {
+          ind.innerText = "Thử lại";
+          ind.style.background = "#f1f5f9";
+          ind.style.color = "#64748b";
+          resBox.innerText = "Chưa nghe rõ hoặc chưa bật quyền Micro. Vui lòng thử lại.";
+        };
+
+        rec.start();
+      }
+    </script>
+    """, height=125)
+    
     with st.form("add_item_form", clear_on_submit=True):
-        f_eng = st.text_input("English text *", placeholder="Nhập từ hoặc câu tiếng Anh...")
-        f_viet = st.text_input("Vietnamese meaning *", placeholder="Nhập nghĩa tiếng Việt...")
+        f_eng = st.text_input("English text *", placeholder="Nhập hoặc nói từ/câu tiếng Anh...")
+        f_viet = st.text_input("Vietnamese meaning *", placeholder="Nhập hoặc nói nghĩa tiếng Việt...")
         recorded_audio = st.audio_input("Record audio (Ghi âm giọng đọc)")
         
         submitted = st.form_submit_button("💾 Lưu thẻ", type="primary", use_container_width=True)
@@ -531,48 +613,3 @@ with tab_library:
                 if st.button("↩️ Ẩn tiếng Anh", key=f"unflip_{it['id']}", use_container_width=True):
                     st.session_state.flipped_library_cards.remove(it["id"])
                     st.rerun()
-
-# ==========================================
-# TAB 4: GOOGLE DRIVE & CLOUD GUIDE
-# ==========================================
-with tab_gdrive:
-    st.subheader("☁️ Google Drive Architecture & Cloud Sync")
-    
-    st.success("✅ **Live Google Spreadsheet Moved to Target Google Drive Folder!**")
-    sheet_url = "https://docs.google.com/spreadsheets/d/1LU4SAghihRdM_ivhDizHLKi6vKPVlYL2ppHWNrUhJ_c/edit?authuser=tucd"
-    folder_url = "https://drive.google.com/drive/folders/1OfwAewoRPK-xGAH_O-UUQk577GK3XymP?authuser=tucd"
-    
-    col_link1, col_link2 = st.columns(2)
-    with col_link1:
-        st.link_button("📊 Open EchoKids Google Sheet", sheet_url, type="primary", use_container_width=True)
-    with col_link2:
-        st.link_button("📁 Open Target Google Drive Folder", folder_url, use_container_width=True)
-    
-    st.markdown("""
-    ### ⚡ Cơ chế tự động đồng bộ Google Drive (100% Zero-Click):
-    
-    1. **Tự động đồng bộ thời gian thực (Không cần bấm nút)**:
-       - Mỗi khi bé ôn tập thẻ (bấm *Practice Again*, *Good*, hay *Super Easy*), hệ thống **tự động** tính toán lại thuật toán Spaced Repetition và ghi ngay vào file sao lưu Google Drive.
-       - Khi ba/mẹ thêm từ vựng, cụm từ, câu mới tại tab **Daily Input**, hệ thống **tự động** nạp vào kho và đồng bộ ngay lên Google Drive.
-       - Thư mục sao lưu `online_archive/` nằm trực tiếp trong Google Drive (`G:\\My Drive\\CODE\\8. English\\online_archive`) được Google Drive Desktop đồng bộ lên đám mây liên tục.
-    
-    2. **Bảng tính Google Spreadsheet trực tuyến**:
-       - Bảng tính **`EchoKids English - Learning Database`** nằm an toàn trong thư mục Google Drive của anh:
-         [**Xem thư mục Google Drive**](https://drive.google.com/drive/folders/1OfwAewoRPK-xGAH_O-UUQk577GK3XymP?authuser=tucd).
-       - Đã cập nhật 2 hồ sơ học tập: **Bunny Jolie** (7 tuổi) và **Puppy Flora** (11 tuổi).
-    
-    3. **Hoạt động 24/7 trên Streamlit Cloud (`share.streamlit.io`)**:
-       - Ứng dụng chạy trực tiếp trên cloud, các con mở trên iPad/iPhone/tablet học mọi lúc mọi nơi mà **không cần bật máy tính cá nhân**.
-    """)
-    
-    # Download current backup button
-    latest_file = os.path.join(ARCHIVE_DIR, "echokids_online_backup_latest.json")
-    if os.path.exists(latest_file):
-        with open(latest_file, "r", encoding="utf-8") as bf:
-            backup_str = bf.read()
-        st.download_button(
-            label="📥 Download Current Google Drive Backup Snapshot (JSON)",
-            data=backup_str,
-            file_name=f"echokids_backup_{date.today().isoformat()}.json",
-            mime="application/json"
-        )
