@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>EchoKids English - Listening & Speaking SRS</title>
+  <!-- PWA & Mobile Web App Capabilities -->
+  <link rel="manifest" href="/static/manifest.json">
+  <meta name="theme-color" content="#f97316">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="EchoKids">
+  <link rel="apple-touch-icon" href="/static/icon-192.png">
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .kid-font {
+      font-family: 'Fredoka', cursive, sans-serif;
+    }
+    /* Flip Card Animation */
+    .perspective-1000 {
+      perspective: 1000px;
+    }
+    .transform-style-3d {
+      transform-style: preserve-3d;
+    }
+    .backface-hidden {
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+    .rotate-y-180 {
+      transform: rotateY(180deg);
+    }
+    /* Sound wave animation */
+    @keyframes soundwave {
+      0%, 100% { height: 8px; }
+      50% { height: 28px; }
+    }
+    .wave-bar {
+      animation: soundwave 1.2s infinite ease-in-out;
+    }
+    .wave-bar:nth-child(2) { animation-delay: 0.2s; }
+    .wave-bar:nth-child(3) { animation-delay: 0.4s; }
+    .wave-bar:nth-child(4) { animation-delay: 0.1s; }
+    .wave-bar:nth-child(5) { animation-delay: 0.3s; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col selection:bg-amber-200">
+
+  <!-- Top Navigation & Profile Switcher -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-4">
+      
+      <!-- Brand Logo -->
+      <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('review')">
+        <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-amber-400 to-orange-500 flex items-center justify-center text-white shadow-md shadow-orange-100">
+          <i data-lucide="headphones" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <h1 class="text-xl font-extrabold tracking-tight text-slate-900 kid-font">EchoKids<span class="text-orange-500">SRS</span></h1>
+            <span class="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-bold">Listen & Speak</span>
+          </div>
+          <p class="text-xs text-slate-500 font-medium">Daily Collocation & Sentence Repetition</p>
+        </div>
+      </div>
+
+      <!-- Center Profiles Switcher (Kid 1 / Kid 2 / Parent) -->
+      <div class="flex items-center bg-slate-100 p-1.5 rounded-2xl border border-slate-200 shadow-inner" id="profileSelector">
+        <!-- Rendered by JS -->
+      </div>
+
+      <!-- Action Nav Tabs -->
+      <div class="flex items-center space-x-1 sm:space-x-2">
+        <button onclick="switchTab('review')" id="nav-review" class="nav-btn px-3.5 py-2 rounded-xl text-sm font-bold flex items-center space-x-2 transition bg-orange-500 text-white shadow-sm shadow-orange-200">
+          <i data-lucide="play-circle" class="w-4 h-4"></i>
+          <span>Daily Review</span>
+          <span id="badgeDue" class="ml-1 px-2 py-0.5 text-xs rounded-full bg-white text-orange-600 font-extrabold shadow-sm">0</span>
+        </button>
+
+        <button onclick="switchTab('add')" id="nav-add" class="nav-btn px-3.5 py-2 rounded-xl text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center space-x-1.5 transition">
+          <i data-lucide="plus-circle" class="w-4 h-4"></i>
+          <span>Daily Input</span>
+        </button>
+
+        <button onclick="switchTab('library')" id="nav-library" class="nav-btn px-3.5 py-2 rounded-xl text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center space-x-1.5 transition">
+          <i data-lucide="book-open" class="w-4 h-4"></i>
+          <span>My Library</span>
+        </button>
+
+        <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn px-3.5 py-2 rounded-xl text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center space-x-1.5 transition">
+          <i data-lucide="line-chart" class="w-4 h-4"></i>
+          <span>Parent Analytics</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Live Counters Sub-Header (Words, Collocations, Sentences) -->
+  <div class="bg-gradient-to-r from-orange-50 via-amber-50 to-emerald-50 border-b border-amber-200/60 py-3 shadow-inner">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-wrap items-center justify-between gap-3 text-sm">
+      
+      <!-- Left: Active Child Identity & Streak -->
+      <div class="flex items-center space-x-3">
+        <span id="headerAvatar" class="text-2xl filter drop-shadow">🐰</span>
+        <div>
+          <span class="font-extrabold text-slate-900 text-base" id="headerKidName">Bunny Leo</span>
+          <span class="text-xs text-slate-500 ml-1.5 font-medium" id="headerKidAge">(Age 7)</span>
+        </div>
+        <div class="flex items-center bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-bold space-x-1 border border-orange-200">
+          <i data-lucide="flame" class="w-3.5 h-3.5 text-orange-500 fill-orange-500"></i>
+          <span><span id="headerStreak">0</span> Day Streak!</span>
+        </div>
+      </div>
+
+      <!-- Right: Real-time Metric Badges (Words, Collocations, Sentences) -->
+      <div class="flex items-center space-x-2 sm:space-x-4">
+        <!-- Collocations -->
+        <div class="flex items-center space-x-2 bg-white/90 backdrop-blur px-3 py-1.5 rounded-xl border border-indigo-100 shadow-sm">
+          <div class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xs">🔗</div>
+          <div>
+            <div class="text-[10px] uppercase font-bold text-indigo-600 tracking-wider">Collocations</div>
+            <div class="text-sm font-extrabold text-slate-800" id="statCollocations">0</div>
+          </div>
+        </div>
+
+        <!-- Sentences -->
+        <div class="flex items-center space-x-2 bg-white/90 backdrop-blur px-3 py-1.5 rounded-xl border border-emerald-100 shadow-sm">
+          <div class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs">💬</div>
+          <div>
+            <div class="text-[10px] uppercase font-bold text-emerald-600 tracking-wider">Sentences</div>
+            <div class="text-sm font-extrabold text-slate-800" id="statSentences">0</div>
+          </div>
+        </div>
+
+        <!-- Words -->
+        <div class="flex items-center space-x-2 bg-white/90 backdrop-blur px-3 py-1.5 rounded-xl border border-amber-100 shadow-sm">
+          <div class="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-xs">📚</div>
+          <div>
+            <div class="text-[10px] uppercase font-bold text-amber-600 tracking-wider">Words</div>
+            <div class="text-sm font-extrabold text-slate-800" id="statWords">0</div>
+          </div>
+        </div>
+
+        <!-- Total Mastered -->
+        <div class="hidden md:flex items-center space-x-2 bg-white/90 backdrop-blur px-3 py-1.5 rounded-xl border border-amber-200 shadow-sm">
+          <div class="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-xs">⭐</div>
+          <div>
+            <div class="text-[10px] uppercase font-bold text-amber-600 tracking-wider">Mastered</div>
+            <div class="text-sm font-extrabold text-amber-600" id="statMastered">0</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Main Container -->
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full">
+
+    <!-- ========================================== -->
+    <!-- TAB 1: DAILY SRS REVIEW (AUDIO-FIRST MODE) -->
+    <!-- ========================================== -->
+    <section id="tab-review" class="space-y-6">
+      
+      <!-- Top Session Header & Audio-First Toggle -->
+      <div class="flex flex-wrap items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center font-bold">
+            <i data-lucide="sparkles" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h2 class="text-lg font-bold text-slate-900 kid-font" id="reviewDeckTitle">Today's SRS Practice Session</h2>
+            <p class="text-xs text-slate-500">Listen, Speak aloud, and Rate your memory retention</p>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-3">
+          <!-- Audio-First Toggle -->
+          <label class="flex items-center cursor-pointer select-none space-x-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200">
+            <span class="text-xs font-bold text-slate-700">🎧 Audio-First Reveal</span>
+            <input type="checkbox" id="chkAudioFirst" checked class="sr-only peer" onchange="toggleAudioFirstMode(this.checked)">
+            <div class="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-orange-500 relative"></div>
+          </label>
+          <!-- Speech Accent Selector -->
+          <select id="voiceAccentSelect" class="text-xs font-semibold bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-slate-700 outline-none">
+            <option value="en-US">🇺🇸 US English</option>
+            <option value="en-GB">🇬🇧 British English</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- SRS Card Container -->
+      <div id="reviewCardArea" class="max-w-2xl mx-auto">
+        <!-- Dynamic Card Loaded by JS -->
+      </div>
+
+      <!-- Empty State / Completed Deck Banner -->
+      <div id="reviewCompletedArea" class="hidden max-w-xl mx-auto text-center py-12 px-6 bg-white rounded-3xl border border-amber-200 shadow-md">
+        <div class="text-6xl mb-4 animate-bounce">🎉</div>
+        <h3 class="text-2xl font-extrabold text-slate-900 kid-font mb-2">Awesome Work! All Done for Today!</h3>
+        <p class="text-slate-600 text-sm mb-6 leading-relaxed">
+          You've completed all scheduled Spaced Repetition items for today. Every chunk and sentence you practiced is now firmly locked into your long-term memory!
+        </p>
+        <div class="flex justify-center space-x-3">
+          <button onclick="switchTab('add')" class="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl shadow-md shadow-orange-200 transition text-sm flex items-center space-x-2">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span>Add New Item</span>
+          </button>
+          <button onclick="loadDueItems(true)" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition text-sm flex items-center space-x-2">
+            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+            <span>Practice Deck Again</span>
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 2: DAILY INPUT (ADD NEW ITEM) -->
+    <!-- ========================================== -->
+    <section id="tab-add" class="hidden max-w-2xl mx-auto space-y-6">
+      
+      <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+        <div class="flex items-center space-x-3 border-b border-slate-100 pb-4">
+          <div class="w-12 h-12 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center font-bold shadow-inner">
+            <i data-lucide="sparkle" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h2 class="text-xl font-extrabold text-slate-900 kid-font">Enter Today's New Learning</h2>
+            <p class="text-xs text-slate-500">Add words, collocations, or sentences heard from stories or daily life</p>
+          </div>
+        </div>
+
+        <form id="addItemForm" onsubmit="handleFormSubmit(event)" class="space-y-5">
+          
+          <!-- Category Selector (Collocation vs Sentence vs Word) -->
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">What did your child learn? (Select Category)</label>
+            <div class="grid grid-cols-3 gap-3">
+              <label class="cursor-pointer">
+                <input type="radio" name="item_type" value="collocation" checked class="peer sr-only">
+                <div class="p-3 text-center rounded-2xl border-2 border-slate-200 peer-checked:border-indigo-600 peer-checked:bg-indigo-50 peer-checked:text-indigo-800 transition hover:bg-slate-50">
+                  <div class="text-2xl mb-1">🔗</div>
+                  <div class="text-sm font-extrabold">Collocation</div>
+                  <div class="text-[10px] text-slate-500 mt-0.5">e.g. <i>brush teeth, heavy rain</i></div>
+                </div>
+              </label>
+
+              <label class="cursor-pointer">
+                <input type="radio" name="item_type" value="sentence" class="peer sr-only">
+                <div class="p-3 text-center rounded-2xl border-2 border-slate-200 peer-checked:border-emerald-600 peer-checked:bg-emerald-50 peer-checked:text-emerald-800 transition hover:bg-slate-50">
+                  <div class="text-2xl mb-1">💬</div>
+                  <div class="text-sm font-extrabold">Full Sentence</div>
+                  <div class="text-[10px] text-slate-500 mt-0.5">e.g. <i>Could you pass me...?</i></div>
+                </div>
+              </label>
+
+              <label class="cursor-pointer">
+                <input type="radio" name="item_type" value="word" class="peer sr-only">
+                <div class="p-3 text-center rounded-2xl border-2 border-slate-200 peer-checked:border-amber-500 peer-checked:bg-amber-50 peer-checked:text-amber-800 transition hover:bg-slate-50">
+                  <div class="text-2xl mb-1">📚</div>
+                  <div class="text-sm font-extrabold">Single Word</div>
+                  <div class="text-[10px] text-slate-500 mt-0.5">e.g. <i>curious, clumsy</i></div>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- English Text Input with Live Audio Preview -->
+          <div>
+            <div class="flex justify-between items-center mb-1.5">
+              <label class="text-xs font-bold uppercase tracking-wider text-slate-700">English Text *</label>
+              <button type="button" onclick="previewCurrentAudio()" class="text-xs text-orange-600 font-bold hover:underline flex items-center space-x-1">
+                <i data-lucide="volume-2" class="w-3.5 h-3.5"></i>
+                <span>Hear Native Voice</span>
+              </button>
+            </div>
+            <div class="relative">
+              <input type="text" id="inputEnglish" required placeholder="e.g., make a wish / What a wonderful day!" 
+                class="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition text-base">
+            </div>
+          </div>
+
+          <!-- Vietnamese Meaning -->
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Vietnamese Meaning *</label>
+            <input type="text" id="inputVietnamese" required placeholder="e.g., ước một điều ước / Thật là một ngày tuyệt vời!" 
+              class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 focus:bg-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition text-sm">
+          </div>
+
+          <!-- Example Sentence (Context) -->
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Example Sentence / Context (Optional)</label>
+            <input type="text" id="inputExample" placeholder="e.g., Close your eyes and make a wish before blowing out the candles." 
+              class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 focus:bg-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition text-sm">
+          </div>
+
+          <!-- Context Note / Where did they learn it? -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Phonetic / IPA (Optional)</label>
+              <input type="text" id="inputIpa" placeholder="e.g., /meɪk ə wɪʃ/" 
+                class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:bg-white text-xs outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Source / Note (Optional)</label>
+              <input type="text" id="inputNote" placeholder="e.g., Peppa Pig Ep 4 / Bedtime story" 
+                class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:bg-white text-xs outline-none">
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="pt-2">
+            <button type="submit" class="w-full py-4 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-extrabold rounded-2xl shadow-lg shadow-orange-200 transition text-base flex items-center justify-center space-x-2">
+              <i data-lucide="check-circle" class="w-5 h-5"></i>
+              <span>Save & Queue for Daily SRS Review</span>
+            </button>
+          </div>
+
+        </form>
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 3: MY LEARNING LIBRARY & TRACKER -->
+    <!-- ========================================== -->
+    <section id="tab-library" class="hidden space-y-6">
+      
+      <!-- Filter Bar -->
+      <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center space-x-2 flex-1 min-w-[240px]">
+          <div class="relative w-full">
+            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5"></i>
+            <input type="text" id="libSearch" oninput="filterLibrary()" placeholder="Search words, collocations, sentences..." 
+              class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-orange-500 outline-none">
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-2">
+          <!-- Type Filter -->
+          <select id="libTypeFilter" onchange="filterLibrary()" class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 outline-none">
+            <option value="">All Categories</option>
+            <option value="collocation">🔗 Collocations Only</option>
+            <option value="sentence">💬 Sentences Only</option>
+            <option value="word">📚 Words Only</option>
+          </select>
+
+          <!-- Mastery Filter -->
+          <select id="libStateFilter" onchange="filterLibrary()" class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 outline-none">
+            <option value="">All Mastery Levels</option>
+            <option value="mastered">⭐ Mastered</option>
+            <option value="review">🔄 In Review</option>
+            <option value="learning">🌱 Learning</option>
+            <option value="new">✨ New</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Library Grid -->
+      <div id="libraryContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Rendered by JS -->
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 4: PARENT ANALYTICS & MONITORING -->
+    <!-- ========================================== -->
+    <section id="tab-dashboard" class="hidden space-y-6">
+      
+      <!-- Executive Summary Cards -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between text-indigo-600 mb-2">
+            <span class="text-xs font-bold uppercase tracking-wider">Total Collocations</span>
+            <span class="text-xl">🔗</span>
+          </div>
+          <div class="text-2xl font-extrabold text-slate-900" id="parentTotalCollocations">0</div>
+          <div class="text-xs text-slate-500 mt-1">High-fluency speech chunks</div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between text-emerald-600 mb-2">
+            <span class="text-xs font-bold uppercase tracking-wider">Total Sentences</span>
+            <span class="text-xl">💬</span>
+          </div>
+          <div class="text-2xl font-extrabold text-slate-900" id="parentTotalSentences">0</div>
+          <div class="text-xs text-slate-500 mt-1">Complete spoken utterances</div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between text-amber-600 mb-2">
+            <span class="text-xs font-bold uppercase tracking-wider">Total Words</span>
+            <span class="text-xl">📚</span>
+          </div>
+          <div class="text-2xl font-extrabold text-slate-900" id="parentTotalWords">0</div>
+          <div class="text-xs text-slate-500 mt-1">Core vocabulary items</div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between text-purple-600 mb-2">
+            <span class="text-xs font-bold uppercase tracking-wider">Mastered Items</span>
+            <span class="text-xl">🏆</span>
+          </div>
+          <div class="text-2xl font-extrabold text-purple-700" id="parentTotalMastered">0</div>
+          <div class="text-xs text-slate-500 mt-1">Long-term retention achieved</div>
+        </div>
+      </div>
+
+      <!-- Comparison: Kid 1 (Age 7) vs Kid 2 (Age 11) -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="kidsComparisonCards">
+        <!-- Rendered by JS -->
+      </div>
+
+      <!-- Spaced Repetition Settings & Data Management -->
+      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+        <h3 class="text-base font-extrabold text-slate-900">Parent Data & System Controls</h3>
+        <p class="text-xs text-slate-500">Export backups, seed sample age-appropriate decks, or reset intervals.</p>
+        <div class="flex flex-wrap gap-3">
+          <button onclick="exportData()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition flex items-center space-x-1.5">
+            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+            <span>Export Backup (JSON)</span>
+          </button>
+          <button onclick="reseedSampleData()" class="px-4 py-2 bg-orange-100 hover:bg-orange-200 text-orange-800 rounded-xl text-xs font-bold transition flex items-center space-x-1.5">
+            <i data-lucide="refresh-ccw" class="w-3.5 h-3.5"></i>
+            <span>Load Curated Starter Decks</span>
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Audio elements & Scripts -->
+  <script src="/static/app.js"></script>
+</body>
+</html>
