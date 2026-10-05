@@ -195,9 +195,6 @@ function renderCurrentCard() {
   completedArea.classList.add("hidden");
   const item = state.dueItems[state.currentCardIndex];
   const progressPercent = Math.round(((state.currentCardIndex + 1) / state.dueItems.length) * 100);
-
-  // Audio-First display state
-  const isAudioFirstActive = state.isAudioFirst && !state.isFlipped;
   
   cardArea.innerHTML = `
     <div class="bg-white rounded-3xl border border-slate-200/90 shadow-lg shadow-slate-100 overflow-hidden transition-all duration-300">
@@ -219,47 +216,26 @@ function renderCurrentCard() {
       <!-- Card Core Body -->
       <div class="p-8 text-center min-h-[300px] flex flex-col justify-center items-center relative">
         
-        ${isAudioFirstActive ? `
-          <!-- AUDIO-FIRST PROMPT: Audio wave & Listen button -->
-          <div class="space-y-5 my-4">
-            <div class="w-24 h-24 mx-auto rounded-3xl bg-gradient-to-tr from-orange-400 to-amber-400 flex items-center justify-center text-white shadow-xl shadow-orange-200 cursor-pointer transform hover:scale-105 active:scale-95 transition"
-              onclick="speakCurrentText()">
-              <i data-lucide="volume-2" class="w-12 h-12"></i>
+        ${!state.isFlipped ? `
+          <!-- FRONT: VIETNAMESE MEANING ONLY -->
+          <div class="space-y-4 my-6 text-center max-w-lg">
+            <div class="inline-flex items-center space-x-1.5 px-3.5 py-1 rounded-full bg-orange-100 text-orange-700 text-xs font-extrabold uppercase tracking-wider">
+              <span>🇻🇳 Nghĩa tiếng Việt</span>
             </div>
-            
-            <div class="flex items-center justify-center space-x-1.5 h-7">
-              <span class="w-1.5 bg-orange-400 rounded-full wave-bar"></span>
-              <span class="w-1.5 bg-orange-500 rounded-full wave-bar"></span>
-              <span class="w-1.5 bg-amber-500 rounded-full wave-bar"></span>
-              <span class="w-1.5 bg-orange-400 rounded-full wave-bar"></span>
-              <span class="w-1.5 bg-amber-400 rounded-full wave-bar"></span>
-            </div>
-
-            <div>
-              <h3 class="text-xl font-extrabold text-slate-800 kid-font">Listen to the native voice!</h3>
-              <p class="text-xs text-slate-500 mt-1">Tap the speaker to replay, then speak out loud</p>
-            </div>
-
-            <!-- Voice Recording Interactive Check -->
-            <div class="pt-2 flex flex-col items-center">
-              <button onclick="startVoiceInput()" id="btnMicRecord" 
-                class="px-4 py-2 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center space-x-2 transition border border-slate-200">
-                <i data-lucide="mic" class="w-4 h-4 text-red-500"></i>
-                <span id="micLabel">Tap to speak & check pronunciation</span>
-              </button>
-              <div id="speechFeedback" class="text-xs font-bold mt-2 text-emerald-600 min-h-[20px]"></div>
-            </div>
-
+            <h2 class="text-3xl sm:text-4xl font-extrabold text-orange-600 tracking-tight leading-tight kid-font">
+              ${escapeHtml(item.vietnamese_meaning)}
+            </h2>
+            <p class="text-xs text-slate-500 font-medium">
+              🤔 Bé hãy nhớ lại và phát âm từ/câu này bằng tiếng Anh, sau đó bấm nút lật thẻ để kiểm tra nhé!
+            </p>
           </div>
         ` : `
-          <!-- REVEALED CONTENT / STANDARD VIEW -->
+          <!-- BACK: REVEALED ENGLISH + AUDIO -->
           <div class="space-y-4 w-full">
             
-            <!-- Audio Speaker Button -->
-            <button onclick="speakCurrentText()" class="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-orange-100 text-orange-700 hover:bg-orange-200 font-bold text-xs transition">
-              <i data-lucide="volume-2" class="w-4 h-4"></i>
-              <span>Play Native Audio</span>
-            </button>
+            <div class="inline-flex items-center space-x-1.5 px-3.5 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-extrabold uppercase tracking-wider">
+              <span>🇬🇧 Tiếng Anh</span>
+            </div>
 
             <!-- English Text -->
             <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight kid-font">
@@ -277,6 +253,12 @@ function renderCurrentCard() {
                 ${escapeHtml(item.vietnamese_meaning)}
               </div>
             </div>
+
+            <!-- Audio Speaker Button -->
+            <button onclick="speakCurrentText()" class="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-orange-100 text-orange-700 hover:bg-orange-200 font-bold text-xs transition">
+              <i data-lucide="volume-2" class="w-4 h-4"></i>
+              <span>Nghe lại phát âm</span>
+            </button>
 
             <!-- Example Sentence / Context -->
             ${item.example_sentence ? `
@@ -304,34 +286,34 @@ function renderCurrentCard() {
       <div class="p-6 bg-slate-50 border-t border-slate-100">
         ${!state.isFlipped ? `
           <button onclick="flipCard()" class="w-full py-4 bg-orange-500 hover:bg-orange-600 active:scale-[0.99] text-white font-extrabold rounded-2xl shadow-md shadow-orange-200 transition text-base flex items-center justify-center space-x-2">
-            <span>Check Meaning & Spelling</span>
-            <i data-lucide="arrow-right" class="w-5 h-5"></i>
+            <span>🔄 Lật thẻ xem tiếng Anh & Nghe phát âm</span>
+            <i data-lucide="volume-2" class="w-5 h-5 ml-1"></i>
           </button>
         ` : `
           <!-- 3-Tier Kid-Friendly SRS Rating Buttons -->
           <div>
-            <div class="text-xs font-bold text-center text-slate-500 uppercase tracking-wider mb-3">How well did you remember and pronounce it?</div>
+            <div class="text-xs font-bold text-center text-slate-500 uppercase tracking-wider mb-3">Bé nhớ từ này như thế nào?</div>
             <div class="grid grid-cols-3 gap-3">
               
               <!-- 1: Again / Practice -->
               <button onclick="submitReview(1)" class="p-3.5 rounded-2xl border-2 border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-800 font-extrabold transition flex flex-col items-center justify-center space-y-1">
                 <span class="text-xl">🌱</span>
-                <span class="text-xs font-bold">Practice Again</span>
-                <span class="text-[10px] text-rose-600 font-semibold">Today</span>
+                <span class="text-xs font-bold">Học lại</span>
+                <span class="text-[10px] text-rose-600 font-semibold">Hôm nay</span>
               </button>
 
               <!-- 2: Good Job -->
               <button onclick="submitReview(2)" class="p-3.5 rounded-2xl border-2 border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-extrabold transition flex flex-col items-center justify-center space-y-1">
                 <span class="text-xl">👍</span>
-                <span class="text-xs font-bold">Good Job!</span>
-                <span class="text-[10px] text-emerald-600 font-semibold">+2-3 days</span>
+                <span class="text-xs font-bold">Nhớ tốt!</span>
+                <span class="text-[10px] text-emerald-600 font-semibold">+2-3 ngày</span>
               </button>
 
               <!-- 3: Super Easy -->
               <button onclick="submitReview(3)" class="p-3.5 rounded-2xl border-2 border-amber-200 bg-amber-50 hover:bg-amber-100 text-amber-800 font-extrabold transition flex flex-col items-center justify-center space-y-1">
                 <span class="text-xl">🌟</span>
-                <span class="text-xs font-bold">Super Easy!</span>
-                <span class="text-[10px] text-amber-600 font-semibold">+4-6 days</span>
+                <span class="text-xs font-bold">Rất dễ!</span>
+                <span class="text-[10px] text-amber-600 font-semibold">+4-6 ngày</span>
               </button>
 
             </div>
@@ -343,20 +325,17 @@ function renderCurrentCard() {
   `;
   
   lucide.createIcons();
-
-  // Auto-play sound if Audio-First mode is ON
-  if (isAudioFirstActive) {
-    setTimeout(() => {
-      speakCurrentText();
-    }, 300);
-  }
 }
 
-// Flip Card Action
+// Flip Card Action: Simultaneously play English pronunciation!
 function flipCard() {
   playChime('flip');
   state.isFlipped = true;
   renderCurrentCard();
+  // Simultaneously speak native English audio!
+  setTimeout(() => {
+    speakCurrentText();
+  }, 150);
 }
 
 // Toggle Audio-First Mode

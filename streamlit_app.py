@@ -434,21 +434,25 @@ with tab_review:
         # Card Container Box
         card_box = st.container(border=True)
         with card_box:
-            # AUDIO-FIRST MODE: Play sound immediately
-            audio_bytes = generate_audio(card["english_text"], tld=tld_code)
-            if audio_bytes:
-                st.audio(audio_bytes, format="audio/mp3", autoplay=True)
-
             if not st.session_state.card_flipped:
-                st.markdown("### 👂 Lắng nghe và phát âm theo!")
+                # VIETNAMESE-FIRST MODE: Prompt child with Vietnamese meaning
+                st.caption("🇻🇳 Nghĩa tiếng Việt:")
+                st.markdown(f"## :orange[**{card['vietnamese_meaning']}**]")
+                st.markdown("##### 🤔 *Bé hãy nhớ và phát âm từ/câu này bằng tiếng Anh, sau đó lật thẻ để kiểm tra nhé!*")
                 
-                if st.button("👀 Xem nghĩa tiếng Việt (Lật thẻ)", type="primary", use_container_width=True):
+                if st.button("🔄 Lật thẻ xem tiếng Anh & Nghe phát âm", type="primary", use_container_width=True):
                     st.session_state.card_flipped = True
                     st.rerun()
             else:
-                # Revealed View
-                st.markdown(f"## {card['english_text']}")
+                # Revealed View: English text + auto-play English audio
+                st.caption("🇬🇧 Tiếng Anh:")
+                st.markdown(f"## **{card['english_text']}**")
                 st.markdown(f"### 🇻🇳 :orange[**{card['vietnamese_meaning']}**]")
+                
+                # Simultaneously play English pronunciation audio!
+                audio_bytes = generate_audio(card["english_text"], tld=tld_code)
+                if audio_bytes:
+                    st.audio(audio_bytes, format="audio/mp3", autoplay=True)
                 
                 rcol1, rcol2, rcol3 = st.columns(3)
                 with rcol1:
