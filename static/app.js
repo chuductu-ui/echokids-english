@@ -601,58 +601,6 @@ function triggerConfetti() {
   }
 }
 
-let inputMediaRecorder = null;
-let inputAudioChunks = [];
-let isInputRecording = false;
-
-async function toggleInputVoiceRecord() {
-  const btn = document.getElementById("btnInputRecord");
-  const txt = document.getElementById("txtInputRecord");
-  const mic = document.getElementById("micIconInput");
-  const preview = document.getElementById("audioInputPreview");
-
-  if (!isInputRecording) {
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      alert("Trình duyệt không hỗ trợ ghi âm trực tiếp.");
-      return;
-    }
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      inputMediaRecorder = new MediaRecorder(stream);
-      inputAudioChunks = [];
-
-      inputMediaRecorder.ondataavailable = (e) => {
-        if (e.data.size > 0) inputAudioChunks.push(e.data);
-      };
-
-      inputMediaRecorder.onstop = () => {
-        const audioBlob = new Blob(inputAudioChunks, { type: 'audio/webm' });
-        const audioUrl = URL.createObjectURL(audioBlob);
-        if (preview) {
-          preview.src = audioUrl;
-          preview.classList.remove("hidden");
-        }
-      };
-
-      inputMediaRecorder.start();
-      isInputRecording = true;
-      if (btn) btn.className = "px-4 py-3 bg-red-100 text-red-700 font-bold rounded-2xl transition text-sm flex items-center space-x-2 border border-red-300 animate-pulse";
-      if (txt) txt.innerText = "Đang ghi âm... (Bấm dừng)";
-      if (mic) mic.className = "w-4 h-4 text-red-600";
-    } catch (err) {
-      console.warn("Microphone access error:", err);
-      alert("Không thể truy cập microphone. Vui lòng cho phép quyền ghi âm.");
-    }
-  } else {
-    if (inputMediaRecorder && inputMediaRecorder.state === "recording") {
-      inputMediaRecorder.stop();
-    }
-    isInputRecording = false;
-    if (btn) btn.className = "px-4 py-3 bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 font-bold rounded-2xl transition text-sm flex items-center space-x-2 border border-slate-300";
-    if (txt) txt.innerText = "Ghi âm lại";
-    if (mic) mic.className = "w-4 h-4 text-orange-500";
-  }
-}
 
 // Form Submission for Daily Input (Minimalist: English & Vietnamese only)
 async function handleFormSubmit(event) {
@@ -684,13 +632,6 @@ async function handleFormSubmit(event) {
     if (res.ok) {
       playChime('success');
       document.getElementById("addItemForm").reset();
-      const preview = document.getElementById("audioInputPreview");
-      if (preview) {
-        preview.src = "";
-        preview.classList.add("hidden");
-      }
-      const txt = document.getElementById("txtInputRecord");
-      if (txt) txt.innerText = "Bấm để ghi âm";
       await updateActiveProfileData();
       switchTab('review');
     } else {
@@ -698,15 +639,6 @@ async function handleFormSubmit(event) {
     }
   } catch (err) {
     console.error("Error creating item:", err);
-  }
-}
-
-function previewCurrentAudio() {
-  const eng = document.getElementById("inputEnglish").value.trim();
-  if (eng) {
-    speakText(eng);
-  } else {
-    speakText("Make a wish");
   }
 }
 

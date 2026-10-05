@@ -514,7 +514,6 @@ with tab_input:
     with st.form("add_item_form", clear_on_submit=True):
         f_eng = st.text_input("English text *", placeholder="Nhập từ hoặc câu tiếng Anh...")
         f_viet = st.text_input("Vietnamese meaning *", placeholder="Nhập nghĩa tiếng Việt...")
-        recorded_audio = st.audio_input("Record audio (Ghi âm giọng đọc)")
         
         submitted = st.form_submit_button("💾 Lưu thẻ", type="primary", use_container_width=True)
         if submitted:
