@@ -190,13 +190,8 @@ def get_profile_counts(profile_id: int):
     cursor = conn.cursor()
     today_str = date.today().isoformat()
     
-    cursor.execute("""
-    SELECT item_type, COUNT(*) as cnt 
-    FROM items 
-    WHERE profile_id = ? 
-    GROUP BY item_type
-    """, (profile_id,))
-    counts = {r["item_type"]: r["cnt"] for r in cursor.fetchall()}
+    cursor.execute("SELECT COUNT(*) as total FROM items WHERE profile_id = ?", (profile_id,))
+    total = cursor.fetchone()["total"]
     
     cursor.execute("""
     SELECT COUNT(*) as due_cnt 
@@ -214,9 +209,7 @@ def get_profile_counts(profile_id: int):
     
     conn.close()
     return {
-        "words": counts.get("word", 0),
-        "collocations": counts.get("collocation", 0),
-        "sentences": counts.get("sentence", 0),
+        "total": total,
         "due_today": due_today,
         "mastered": mastered
     }
@@ -352,22 +345,19 @@ with st.sidebar:
 # --- Top Header & Live Metric Counters ---
 counts = get_profile_counts(pid)
 
-col1, col2, col3, col4, col5 = st.columns([1.5, 1, 1, 1, 1])
+col1, col2, col3, col4 = st.columns([1.5, 1, 1, 1])
 with col1:
     st.markdown(f"### {active_profile['avatar']} {active_profile['name']}")
-    st.caption(f"Age {active_profile['age']} • 🔥 **{active_profile['streak_days']} Day Streak**")
+    st.caption(f"{active_profile['age']} tuổi • 🔥 **{active_profile['streak_days']} ngày streak**")
 
 with col2:
-    st.metric(label="🔗 Collocations", value=counts["collocations"])
+    st.metric(label="Tổng số thẻ", value=counts["total"])
 
 with col3:
-    st.metric(label="💬 Sentences", value=counts["sentences"])
+    st.metric(label="Cần ôn hôm nay", value=counts["due_today"])
 
 with col4:
-    st.metric(label="📚 Words", value=counts["words"])
-
-with col5:
-    st.metric(label="⭐ Mastered", value=counts["mastered"], delta=f"{counts['due_today']} due today")
+    st.metric(label="Đã ghi nhớ", value=counts["mastered"])
 
 st.divider()
 
@@ -392,8 +382,7 @@ with tab_review:
 
     if not due_cards:
         st.balloons()
-        st.success("🎉 Awesome job! You've reviewed all scheduled cards for today!")
-        st.info("💡 Keep speaking, listening to stories, and add newly discovered collocations in the 'Daily Input' tab.")
+        st.success("🎉 Xuất sắc! Bé đã hoàn thành tất cả thẻ cần ôn hôm nay!")
     else:
         # Boundary check
         if st.session_state.card_idx >= len(due_cards):
@@ -402,58 +391,42 @@ with tab_review:
 
         card = due_cards[st.session_state.card_idx]
         progress_val = (st.session_state.card_idx + 1) / len(due_cards)
-        st.progress(progress_val, text=f"Card {st.session_state.card_idx + 1} of {len(due_cards)} (Due for Today)")
+        st.progress(progress_val, text=f"Thẻ {st.session_state.card_idx + 1} / {len(due_cards)}")
 
         # Card Container Box
         card_box = st.container(border=True)
         with card_box:
-            # Type Badge
-            badge_icon = "🔗" if card["item_type"] == "collocation" else ("💬" if card["item_type"] == "sentence" else "📚")
-            st.markdown(f"**{badge_icon} {card['item_type'].upper()}** • State: `{card['state'].upper()}`")
-            
             # AUDIO-FIRST MODE: Play sound immediately
             audio_bytes = generate_audio(card["english_text"], tld=tld_code)
             if audio_bytes:
                 st.audio(audio_bytes, format="audio/mp3", autoplay=True)
 
-            st.write("---")
-
             if not st.session_state.card_flipped:
-                st.markdown("### 👂 Listen to the native sound and repeat aloud!")
-                st.caption("Concentrate on the rhythm and intonation before checking the text.")
+                st.markdown("### 👂 Lắng nghe và phát âm theo!")
                 
-                if st.button("👀 Check Meaning & Spelling (Flip Card)", type="primary", use_container_width=True):
+                if st.button("👀 Xem nghĩa tiếng Việt (Lật thẻ)", type="primary", use_container_width=True):
                     st.session_state.card_flipped = True
                     st.rerun()
             else:
                 # Revealed View
                 st.markdown(f"## {card['english_text']}")
-                if card["ipa_phonetic"]:
-                    st.caption(f"Phonetic: `{card['ipa_phonetic']}`")
-                
-                st.markdown(f"**Vietnamese Meaning:** :orange[**{card['vietnamese_meaning']}**]")
-                
-                if card["example_sentence"]:
-                    st.info(f"💡 *Example:* \"{card['example_sentence']}\"")
-                    
-                st.write("---")
-                st.markdown("##### How well did you remember and pronounce it?")
+                st.markdown(f"### 🇻🇳 :orange[**{card['vietnamese_meaning']}**]")
                 
                 rcol1, rcol2, rcol3 = st.columns(3)
                 with rcol1:
-                    if st.button("🌱 Practice Again\n(Today)", use_container_width=True):
+                    if st.button("🌱 Học lại", use_container_width=True):
                         submit_srs_review(card["id"], pid, 1)
                         st.session_state.card_flipped = False
                         st.session_state.card_idx += 1
                         st.rerun()
                 with rcol2:
-                    if st.button("👍 Good Job!\n(+2-3 days)", use_container_width=True):
+                    if st.button("👍 Nhớ tốt", use_container_width=True):
                         submit_srs_review(card["id"], pid, 2)
                         st.session_state.card_flipped = False
                         st.session_state.card_idx += 1
                         st.rerun()
                 with rcol3:
-                    if st.button("🌟 Super Easy!\n(+4-6 days)", type="primary", use_container_width=True):
+                    if st.button("🌟 Rất dễ", type="primary", use_container_width=True):
                         submit_srs_review(card["id"], pid, 3)
                         st.session_state.card_flipped = False
                         st.session_state.card_idx += 1
@@ -463,23 +436,17 @@ with tab_review:
 # TAB 2: DAILY INPUT
 # ==========================================
 with tab_input:
-    st.subheader(f"➕ Enter Today's Learning for {active_profile['name']}")
-    st.caption("Harvest collocations or sentences from bedtime stories, Bluey, Peppa Pig, or school.")
+    st.subheader(f"➕ Thêm thẻ mới - {active_profile['name']}")
     
     with st.form("add_item_form", clear_on_submit=True):
-        f_type = st.radio("Category:", ["collocation", "sentence", "word"], 
-                          format_func=lambda x: "🔗 Collocation (e.g. make a wish)" if x == "collocation" else ("💬 Full Sentence" if x == "sentence" else "📚 Single Word"),
-                          horizontal=True)
-        f_eng = st.text_input("English Text *", placeholder="e.g., burst into laughter / I'm looking forward to...")
-        f_viet = st.text_input("Vietnamese Meaning *", placeholder="e.g., bật cười lớn / Con rất mong chờ...")
-        f_ex = st.text_input("Example Sentence (Optional)", placeholder="e.g., Everyone burst into laughter at the funny joke.")
-        f_ipa = st.text_input("IPA Phonetic (Optional)", placeholder="e.g., /bɜːst ˈɪn.tuː ˈlɑːf.tər/")
-        f_note = st.text_input("Context / Source (Optional)", placeholder="e.g., Bluey Ep 3 / Storybook")
+        f_eng = st.text_input("English text *", placeholder="Nhập từ hoặc câu tiếng Anh...")
+        f_viet = st.text_input("Vietnamese meaning *", placeholder="Nhập nghĩa tiếng Việt...")
+        recorded_audio = st.audio_input("Record audio (Ghi âm giọng đọc)")
         
-        submitted = st.form_submit_button("💾 Save & Queue for Daily SRS Review", type="primary", use_container_width=True)
+        submitted = st.form_submit_button("💾 Lưu thẻ", type="primary", use_container_width=True)
         if submitted:
             if not f_eng.strip() or not f_viet.strip():
-                st.error("Please enter both English text and Vietnamese meaning.")
+                st.error("Vui lòng nhập cả English text và Vietnamese meaning.")
             else:
                 conn = get_db_connection()
                 cursor = conn.cursor()
@@ -488,8 +455,8 @@ with tab_input:
                 
                 cursor.execute("""
                 INSERT INTO items (profile_id, item_type, english_text, ipa_phonetic, vietnamese_meaning, example_sentence, context_note, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                """, (pid, f_type, f_eng.strip(), f_ipa.strip(), f_viet.strip(), f_ex.strip(), f_note.strip(), now_str))
+                VALUES (?, 'phrase', ?, '', ?, '', '', ?)
+                """, (pid, f_eng.strip(), f_viet.strip(), now_str))
                 new_item_id = cursor.lastrowid
                 
                 cursor.execute("""
@@ -500,14 +467,14 @@ with tab_input:
                 conn.close()
                 
                 sync_to_google_drive_archive()
-                st.success(f"🎉 Added '{f_eng}' successfully! Synced to Google Drive and queued for review.")
+                st.success(f"🎉 Đã lưu thành công: '{f_eng}'!")
                 st.rerun()
 
 # ==========================================
 # TAB 3: LEARNING LIBRARY
 # ==========================================
 with tab_library:
-    st.subheader(f"📚 {active_profile['name']}'s Knowledge Library")
+    st.subheader(f"📚 Thư viện của {active_profile['name']}")
     
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -521,11 +488,7 @@ with tab_library:
     all_items = [dict(r) for r in cursor.fetchall()]
     conn.close()
     
-    l_col1, l_col2 = st.columns([2, 1])
-    with l_col1:
-        search_query = st.text_input("🔍 Search library:", placeholder="Search English, Vietnamese, or examples...")
-    with l_col2:
-        filter_type = st.selectbox("Filter Category:", ["All", "collocation", "sentence", "word"])
+    search_query = st.text_input("🔍 Tìm kiếm:", placeholder="Nhập tiếng Anh hoặc tiếng Việt...")
 
     if "flipped_library_cards" not in st.session_state:
         st.session_state.flipped_library_cards = set()
@@ -533,62 +496,39 @@ with tab_library:
     filtered_items = all_items
     if search_query:
         filtered_items = [it for it in filtered_items if search_query.lower() in it["english_text"].lower() or search_query.lower() in it["vietnamese_meaning"].lower()]
-    if filter_type != "All":
-        filtered_items = [it for it in filtered_items if it["item_type"] == filter_type]
         
     fcol1, fcol2, fcol3 = st.columns([2, 1, 1])
     with fcol1:
-        st.caption(f"Showing {len(filtered_items)} learning cards (Vietnamese prompt by default)")
+        st.caption(f"{len(filtered_items)} thẻ học")
     with fcol2:
-        if st.button("🔄 Lật tất cả (Flip All)", use_container_width=True):
+        if st.button("🔄 Lật tất cả", use_container_width=True):
             st.session_state.flipped_library_cards = {it["id"] for it in filtered_items}
             st.rerun()
     with fcol3:
-        if st.button("🔒 Ẩn tất cả (Hide All)", use_container_width=True):
+        if st.button("🔒 Ẩn tất cả", use_container_width=True):
             st.session_state.flipped_library_cards.clear()
             st.rerun()
 
     for it in filtered_items:
         card_box = st.container(border=True)
         is_flipped = it["id"] in st.session_state.flipped_library_cards
-        badge_icon = "🔗" if it["item_type"] == "collocation" else ("💬" if it["item_type"] == "sentence" else "📚")
         
         with card_box:
-            # Top row: Type badge & Mastery state
-            head_col1, head_col2 = st.columns([3, 1])
-            with head_col1:
-                st.markdown(f"**{badge_icon} {it['item_type'].upper()}** • State: `{it['state'].upper()}`")
-            with head_col2:
-                st.caption(f"Due: {it['due_date']}")
-
             if not is_flipped:
-                # VIETNAMESE ONLY MODE (Default)
                 st.markdown(f"### 🇻🇳 {it['vietnamese_meaning']}")
-                st.caption("Thử nhớ và phát âm tiếng Anh tương ứng trước khi lật thẻ!")
-                
-                if st.button("🔄 Lật thẻ xem tiếng Anh (Flip Card)", key=f"flip_{it['id']}", type="primary", use_container_width=True):
+                if st.button("🔄 Xem tiếng Anh", key=f"flip_{it['id']}", type="primary", use_container_width=True):
                     st.session_state.flipped_library_cards.add(it["id"])
                     st.rerun()
             else:
-                # FLIPPED / ENGLISH REVEALED
                 st.markdown(f"## 🇬🇧 {it['english_text']}")
-                if it["ipa_phonetic"]:
-                    st.caption(f"Phonetic: `{it['ipa_phonetic']}`")
                 
-                # Audio playback for revealed English
                 item_audio = generate_audio(it["english_text"], tld=tld_code)
                 if item_audio:
                     st.audio(item_audio, format="audio/mp3", autoplay=True)
                     
-                st.markdown(f"**Nghĩa tiếng Việt:** :orange[**{it['vietnamese_meaning']}**]")
-                if it["example_sentence"]:
-                    st.info(f"💡 *Example:* \"{it['example_sentence']}\"")
-                if it["context_note"]:
-                    st.caption(f"Note: {it['context_note']}")
-                    
-                st.caption(f"Interval: {it['interval_days']}d • Repetitions: {it['repetitions']}")
+                st.markdown(f"**Nghĩa:** :orange[**{it['vietnamese_meaning']}**]")
                 
-                if st.button("↩️ Ẩn tiếng Anh (Lật lại)", key=f"unflip_{it['id']}", use_container_width=True):
+                if st.button("↩️ Ẩn tiếng Anh", key=f"unflip_{it['id']}", use_container_width=True):
                     st.session_state.flipped_library_cards.remove(it["id"])
                     st.rerun()
 

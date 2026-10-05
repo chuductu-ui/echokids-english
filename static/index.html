@@ -126,41 +126,32 @@
         </div>
       </div>
 
-      <!-- Right: Real-time Metric Badges (Words, Collocations, Sentences) -->
+      <!-- Right: Real-time Minimalist Metrics (Total, Due Today, Mastered) -->
       <div class="flex items-center space-x-2 sm:space-x-4">
-        <!-- Collocations -->
-        <div class="flex items-center space-x-2 bg-white/90 backdrop-blur px-3 py-1.5 rounded-xl border border-indigo-100 shadow-sm">
-          <div class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xs">🔗</div>
+        <!-- Total Cards -->
+        <div class="flex items-center space-x-2 bg-white/90 backdrop-blur px-3.5 py-1.5 rounded-xl border border-slate-200 shadow-sm">
+          <div class="w-7 h-7 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-xs">📚</div>
           <div>
-            <div class="text-[10px] uppercase font-bold text-indigo-600 tracking-wider">Collocations</div>
-            <div class="text-sm font-extrabold text-slate-800" id="statCollocations">0</div>
+            <div class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Tổng thẻ</div>
+            <div class="text-sm font-extrabold text-slate-800" id="statTotal">0</div>
           </div>
         </div>
 
-        <!-- Sentences -->
-        <div class="flex items-center space-x-2 bg-white/90 backdrop-blur px-3 py-1.5 rounded-xl border border-emerald-100 shadow-sm">
-          <div class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs">💬</div>
+        <!-- Due Today -->
+        <div class="flex items-center space-x-2 bg-white/90 backdrop-blur px-3.5 py-1.5 rounded-xl border border-amber-200 shadow-sm">
+          <div class="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-xs">⏰</div>
           <div>
-            <div class="text-[10px] uppercase font-bold text-emerald-600 tracking-wider">Sentences</div>
-            <div class="text-sm font-extrabold text-slate-800" id="statSentences">0</div>
+            <div class="text-[10px] uppercase font-bold text-amber-600 tracking-wider">Cần ôn</div>
+            <div class="text-sm font-extrabold text-amber-600" id="statDue">0</div>
           </div>
         </div>
 
-        <!-- Words -->
-        <div class="flex items-center space-x-2 bg-white/90 backdrop-blur px-3 py-1.5 rounded-xl border border-amber-100 shadow-sm">
-          <div class="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-xs">📚</div>
+        <!-- Mastered -->
+        <div class="flex items-center space-x-2 bg-white/90 backdrop-blur px-3.5 py-1.5 rounded-xl border border-emerald-100 shadow-sm">
+          <div class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs">⭐</div>
           <div>
-            <div class="text-[10px] uppercase font-bold text-amber-600 tracking-wider">Words</div>
-            <div class="text-sm font-extrabold text-slate-800" id="statWords">0</div>
-          </div>
-        </div>
-
-        <!-- Total Mastered -->
-        <div class="hidden md:flex items-center space-x-2 bg-white/90 backdrop-blur px-3 py-1.5 rounded-xl border border-amber-200 shadow-sm">
-          <div class="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-xs">⭐</div>
-          <div>
-            <div class="text-[10px] uppercase font-bold text-amber-600 tracking-wider">Mastered</div>
-            <div class="text-sm font-extrabold text-amber-600" id="statMastered">0</div>
+            <div class="text-[10px] uppercase font-bold text-emerald-600 tracking-wider">Đã nhớ</div>
+            <div class="text-sm font-extrabold text-emerald-600" id="statMastered">0</div>
           </div>
         </div>
       </div>
@@ -183,15 +174,14 @@
             <i data-lucide="sparkles" class="w-5 h-5"></i>
           </div>
           <div>
-            <h2 class="text-lg font-bold text-slate-900 kid-font" id="reviewDeckTitle">Today's SRS Practice Session</h2>
-            <p class="text-xs text-slate-500">Listen, Speak aloud, and Rate your memory retention</p>
+            <h2 class="text-lg font-bold text-slate-900 kid-font" id="reviewDeckTitle">Học & Ôn tập Spaced Repetition</h2>
           </div>
         </div>
 
         <div class="flex items-center space-x-3">
           <!-- Audio-First Toggle -->
           <label class="flex items-center cursor-pointer select-none space-x-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200">
-            <span class="text-xs font-bold text-slate-700">🎧 Audio-First Reveal</span>
+            <span class="text-xs font-bold text-slate-700">🎧 Nghe trước</span>
             <input type="checkbox" id="chkAudioFirst" checked class="sr-only peer" onchange="toggleAudioFirstMode(this.checked)">
             <div class="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-orange-500 relative"></div>
           </label>
@@ -211,18 +201,18 @@
       <!-- Empty State / Completed Deck Banner -->
       <div id="reviewCompletedArea" class="hidden max-w-xl mx-auto text-center py-12 px-6 bg-white rounded-3xl border border-amber-200 shadow-md">
         <div class="text-6xl mb-4 animate-bounce">🎉</div>
-        <h3 class="text-2xl font-extrabold text-slate-900 kid-font mb-2">Awesome Work! All Done for Today!</h3>
+        <h3 class="text-2xl font-extrabold text-slate-900 kid-font mb-2">Xuất sắc! Đã hoàn thành ôn tập hôm nay!</h3>
         <p class="text-slate-600 text-sm mb-6 leading-relaxed">
-          You've completed all scheduled Spaced Repetition items for today. Every chunk and sentence you practiced is now firmly locked into your long-term memory!
+          Tất cả thẻ đã ôn đã được hệ thống tự động lưu chu kỳ và đồng bộ lên Google Drive.
         </p>
         <div class="flex justify-center space-x-3">
           <button onclick="switchTab('add')" class="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl shadow-md shadow-orange-200 transition text-sm flex items-center space-x-2">
             <i data-lucide="plus" class="w-4 h-4"></i>
-            <span>Add New Item</span>
+            <span>Thêm từ mới</span>
           </button>
           <button onclick="loadDueItems(true)" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition text-sm flex items-center space-x-2">
             <i data-lucide="refresh-cw" class="w-4 h-4"></i>
-            <span>Practice Deck Again</span>
+            <span>Ôn lại từ đầu</span>
           </button>
         </div>
       </div>
@@ -230,104 +220,49 @@
     </section>
 
     <!-- ========================================== -->
-    <!-- TAB 2: DAILY INPUT (ADD NEW ITEM) -->
+    <!-- TAB 2: DAILY INPUT (MINIMALIST) -->
     <!-- ========================================== -->
-    <section id="tab-add" class="hidden max-w-2xl mx-auto space-y-6">
+    <section id="tab-add" class="hidden max-w-xl mx-auto space-y-6">
       
       <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6">
-        <div class="flex items-center space-x-3 border-b border-slate-100 pb-4">
-          <div class="w-12 h-12 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center font-bold shadow-inner">
-            <i data-lucide="sparkle" class="w-6 h-6"></i>
-          </div>
-          <div>
-            <h2 class="text-xl font-extrabold text-slate-900 kid-font">Enter Today's New Learning</h2>
-            <p class="text-xs text-slate-500">Add words, collocations, or sentences heard from stories or daily life</p>
-          </div>
+        <div class="border-b border-slate-100 pb-3">
+          <h2 class="text-xl font-extrabold text-slate-900 kid-font">Thêm thẻ mới</h2>
         </div>
 
-        <form id="addItemForm" onsubmit="handleFormSubmit(event)" class="space-y-5">
+        <form id="addItemForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
           
-          <!-- Category Selector (Collocation vs Sentence vs Word) -->
+          <!-- English Text Input -->
           <div>
-            <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">What did your child learn? (Select Category)</label>
-            <div class="grid grid-cols-3 gap-3">
-              <label class="cursor-pointer">
-                <input type="radio" name="item_type" value="collocation" checked class="peer sr-only">
-                <div class="p-3 text-center rounded-2xl border-2 border-slate-200 peer-checked:border-indigo-600 peer-checked:bg-indigo-50 peer-checked:text-indigo-800 transition hover:bg-slate-50">
-                  <div class="text-2xl mb-1">🔗</div>
-                  <div class="text-sm font-extrabold">Collocation</div>
-                  <div class="text-[10px] text-slate-500 mt-0.5">e.g. <i>brush teeth, heavy rain</i></div>
-                </div>
-              </label>
-
-              <label class="cursor-pointer">
-                <input type="radio" name="item_type" value="sentence" class="peer sr-only">
-                <div class="p-3 text-center rounded-2xl border-2 border-slate-200 peer-checked:border-emerald-600 peer-checked:bg-emerald-50 peer-checked:text-emerald-800 transition hover:bg-slate-50">
-                  <div class="text-2xl mb-1">💬</div>
-                  <div class="text-sm font-extrabold">Full Sentence</div>
-                  <div class="text-[10px] text-slate-500 mt-0.5">e.g. <i>Could you pass me...?</i></div>
-                </div>
-              </label>
-
-              <label class="cursor-pointer">
-                <input type="radio" name="item_type" value="word" class="peer sr-only">
-                <div class="p-3 text-center rounded-2xl border-2 border-slate-200 peer-checked:border-amber-500 peer-checked:bg-amber-50 peer-checked:text-amber-800 transition hover:bg-slate-50">
-                  <div class="text-2xl mb-1">📚</div>
-                  <div class="text-sm font-extrabold">Single Word</div>
-                  <div class="text-[10px] text-slate-500 mt-0.5">e.g. <i>curious, clumsy</i></div>
-                </div>
-              </label>
-            </div>
-          </div>
-
-          <!-- English Text Input with Live Audio Preview -->
-          <div>
-            <div class="flex justify-between items-center mb-1.5">
-              <label class="text-xs font-bold uppercase tracking-wider text-slate-700">English Text *</label>
-              <button type="button" onclick="previewCurrentAudio()" class="text-xs text-orange-600 font-bold hover:underline flex items-center space-x-1">
-                <i data-lucide="volume-2" class="w-3.5 h-3.5"></i>
-                <span>Hear Native Voice</span>
-              </button>
-            </div>
-            <div class="relative">
-              <input type="text" id="inputEnglish" required placeholder="e.g., make a wish / What a wonderful day!" 
-                class="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition text-base">
-            </div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">English text *</label>
+            <input type="text" id="inputEnglish" required placeholder="Nhập từ hoặc câu tiếng Anh..." 
+              class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition text-base">
           </div>
 
           <!-- Vietnamese Meaning -->
           <div>
-            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Vietnamese Meaning *</label>
-            <input type="text" id="inputVietnamese" required placeholder="e.g., ước một điều ước / Thật là một ngày tuyệt vời!" 
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Vietnamese meaning *</label>
+            <input type="text" id="inputVietnamese" required placeholder="Nhập nghĩa tiếng Việt..." 
               class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 focus:bg-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition text-sm">
           </div>
 
-          <!-- Example Sentence (Context) -->
-          <div>
-            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Example Sentence / Context (Optional)</label>
-            <input type="text" id="inputExample" placeholder="e.g., Close your eyes and make a wish before blowing out the candles." 
-              class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 focus:bg-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition text-sm">
-          </div>
-
-          <!-- Context Note / Where did they learn it? -->
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Phonetic / IPA (Optional)</label>
-              <input type="text" id="inputIpa" placeholder="e.g., /meɪk ə wɪʃ/" 
-                class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:bg-white text-xs outline-none">
-            </div>
-            <div>
-              <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Source / Note (Optional)</label>
-              <input type="text" id="inputNote" placeholder="e.g., Peppa Pig Ep 4 / Bedtime story" 
-                class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:bg-white text-xs outline-none">
+          <!-- 1 Record Audio Button -->
+          <div class="pt-1 pb-1">
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Ghi âm giọng đọc (Record Audio)</label>
+            <div class="flex items-center space-x-3">
+              <button type="button" id="btnInputRecord" onclick="toggleInputVoiceRecord()" 
+                class="px-4 py-3 bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 font-bold rounded-2xl transition text-sm flex items-center space-x-2 border border-slate-300">
+                <i data-lucide="mic" class="w-4 h-4 text-orange-500" id="micIconInput"></i>
+                <span id="txtInputRecord">Bấm để ghi âm</span>
+              </button>
+              <audio id="audioInputPreview" controls class="hidden h-10 flex-1"></audio>
             </div>
           </div>
 
           <!-- Submit Button -->
           <div class="pt-2">
-            <button type="submit" class="w-full py-4 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-extrabold rounded-2xl shadow-lg shadow-orange-200 transition text-base flex items-center justify-center space-x-2">
-              <i data-lucide="check-circle" class="w-5 h-5"></i>
-              <span>Save & Queue for Daily SRS Review</span>
+            <button type="submit" class="w-full py-3.5 bg-orange-500 hover:bg-orange-600 text-white font-extrabold rounded-2xl shadow-md shadow-orange-200 transition text-base flex items-center justify-center space-x-2">
+              <i data-lucide="check" class="w-5 h-5"></i>
+              <span>Lưu thẻ</span>
             </button>
           </div>
 
@@ -352,13 +287,6 @@
         </div>
 
         <div class="flex items-center space-x-2">
-          <!-- Type Filter -->
-          <select id="libTypeFilter" onchange="filterLibrary()" class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 outline-none">
-            <option value="">All Categories</option>
-            <option value="collocation">🔗 Collocations Only</option>
-            <option value="sentence">💬 Sentences Only</option>
-            <option value="word">📚 Words Only</option>
-          </select>
 
           <!-- Mastery Filter -->
           <select id="libStateFilter" onchange="filterLibrary()" class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 outline-none">

@@ -222,7 +222,7 @@ class ProfileCreate(BaseModel):
 
 class ItemCreate(BaseModel):
     profile_id: int
-    item_type: str = Field(..., description="'word', 'collocation', or 'sentence'")
+    item_type: Optional[str] = "phrase"
     english_text: str
     ipa_phonetic: Optional[str] = ""
     vietnamese_meaning: str

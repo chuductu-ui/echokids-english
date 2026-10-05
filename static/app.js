@@ -139,17 +139,18 @@ async function updateActiveProfileData() {
     document.getElementById("headerKidAge").innerText = `(Age ${state.activeProfile.age})`;
     document.getElementById("headerStreak").innerText = state.activeProfile.streak_days;
     
-    // Breakdown Stats
+    // Minimalist Totals
     const bd = state.activeProfile.breakdown || {};
-    const colTot = bd.collocation ? bd.collocation.total : 0;
-    const senTot = bd.sentence ? bd.sentence.total : 0;
-    const wrdTot = bd.word ? bd.word.total : 0;
+    const totalItems = state.activeProfile.items_count || 
+      ((bd.collocation ? bd.collocation.total : 0) + (bd.sentence ? bd.sentence.total : 0) + (bd.word ? bd.word.total : 0));
     const masTot = (bd.collocation?.mastered || 0) + (bd.sentence?.mastered || 0) + (bd.word?.mastered || 0);
 
-    document.getElementById("statCollocations").innerText = colTot;
-    document.getElementById("statSentences").innerText = senTot;
-    document.getElementById("statWords").innerText = wrdTot;
-    document.getElementById("statMastered").innerText = masTot;
+    const elTotal = document.getElementById("statTotal");
+    const elDue = document.getElementById("statDue");
+    const elMas = document.getElementById("statMastered");
+    if (elTotal) elTotal.innerText = totalItems;
+    if (elDue) elDue.innerText = state.dueItems ? state.dueItems.length : 0;
+    if (elMas) elMas.innerText = masTot;
 
     // Load Due Items
     await loadDueItems();
@@ -194,20 +195,6 @@ function renderCurrentCard() {
   completedArea.classList.add("hidden");
   const item = state.dueItems[state.currentCardIndex];
   const progressPercent = Math.round(((state.currentCardIndex + 1) / state.dueItems.length) * 100);
-  
-  // Type styling
-  let typeLabel = "Word";
-  let typeColor = "amber";
-  let typeIcon = "📚";
-  if (item.item_type === "collocation") {
-    typeLabel = "Collocation";
-    typeColor = "indigo";
-    typeIcon = "🔗";
-  } else if (item.item_type === "sentence") {
-    typeLabel = "Sentence";
-    typeColor = "emerald";
-    typeIcon = "💬";
-  }
 
   // Audio-First display state
   const isAudioFirstActive = state.isAudioFirst && !state.isFlipped;
@@ -215,19 +202,15 @@ function renderCurrentCard() {
   cardArea.innerHTML = `
     <div class="bg-white rounded-3xl border border-slate-200/90 shadow-lg shadow-slate-100 overflow-hidden transition-all duration-300">
       
-      <!-- Card Top Bar: Progress & Category -->
+      <!-- Card Top Bar: Progress -->
       <div class="px-6 py-4 bg-slate-50/80 border-b border-slate-100 flex items-center justify-between">
         <div class="flex items-center space-x-2">
-          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-extrabold bg-${typeColor}-100 text-${typeColor}-800">
-            <span class="mr-1.5">${typeIcon}</span> ${typeLabel.toUpperCase()}
-          </span>
-          <span class="text-xs text-slate-400 font-bold uppercase tracking-wider">
-            Card ${state.currentCardIndex + 1} of ${state.dueItems.length}
+          <span class="text-xs text-slate-500 font-bold uppercase tracking-wider">
+            Thẻ ${state.currentCardIndex + 1} / ${state.dueItems.length}
           </span>
         </div>
         <div class="flex items-center space-x-2">
-          <span class="text-xs font-bold text-slate-500">${item.state ? item.state.toUpperCase() : 'NEW'}</span>
-          <div class="w-20 bg-slate-200 rounded-full h-2 overflow-hidden">
+          <div class="w-24 bg-slate-200 rounded-full h-2 overflow-hidden">
             <div class="bg-orange-500 h-2 rounded-full transition-all duration-300" style="width: ${progressPercent}%"></div>
           </div>
         </div>
@@ -632,20 +615,68 @@ function triggerConfetti() {
   }
 }
 
-// Form Submission for Daily Input (Add New Word / Collocation / Sentence)
+let inputMediaRecorder = null;
+let inputAudioChunks = [];
+let isInputRecording = false;
+
+async function toggleInputVoiceRecord() {
+  const btn = document.getElementById("btnInputRecord");
+  const txt = document.getElementById("txtInputRecord");
+  const mic = document.getElementById("micIconInput");
+  const preview = document.getElementById("audioInputPreview");
+
+  if (!isInputRecording) {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      alert("Trình duyệt không hỗ trợ ghi âm trực tiếp.");
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      inputMediaRecorder = new MediaRecorder(stream);
+      inputAudioChunks = [];
+
+      inputMediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) inputAudioChunks.push(e.data);
+      };
+
+      inputMediaRecorder.onstop = () => {
+        const audioBlob = new Blob(inputAudioChunks, { type: 'audio/webm' });
+        const audioUrl = URL.createObjectURL(audioBlob);
+        if (preview) {
+          preview.src = audioUrl;
+          preview.classList.remove("hidden");
+        }
+      };
+
+      inputMediaRecorder.start();
+      isInputRecording = true;
+      if (btn) btn.className = "px-4 py-3 bg-red-100 text-red-700 font-bold rounded-2xl transition text-sm flex items-center space-x-2 border border-red-300 animate-pulse";
+      if (txt) txt.innerText = "Đang ghi âm... (Bấm dừng)";
+      if (mic) mic.className = "w-4 h-4 text-red-600";
+    } catch (err) {
+      console.warn("Microphone access error:", err);
+      alert("Không thể truy cập microphone. Vui lòng cho phép quyền ghi âm.");
+    }
+  } else {
+    if (inputMediaRecorder && inputMediaRecorder.state === "recording") {
+      inputMediaRecorder.stop();
+    }
+    isInputRecording = false;
+    if (btn) btn.className = "px-4 py-3 bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 font-bold rounded-2xl transition text-sm flex items-center space-x-2 border border-slate-300";
+    if (txt) txt.innerText = "Ghi âm lại";
+    if (mic) mic.className = "w-4 h-4 text-orange-500";
+  }
+}
+
+// Form Submission for Daily Input (Minimalist: English & Vietnamese only)
 async function handleFormSubmit(event) {
   event.preventDefault();
   
-  const form = document.getElementById("addItemForm");
-  const selectedType = form.elements["item_type"].value;
   const english = document.getElementById("inputEnglish").value.trim();
   const vietnamese = document.getElementById("inputVietnamese").value.trim();
-  const example = document.getElementById("inputExample").value.trim();
-  const ipa = document.getElementById("inputIpa").value.trim();
-  const note = document.getElementById("inputNote").value.trim();
   
   if (!english || !vietnamese) {
-    alert("Please provide both English text and Vietnamese meaning.");
+    alert("Vui lòng nhập cả Tiếng Anh và Tiếng Việt.");
     return;
   }
   
@@ -655,23 +686,29 @@ async function handleFormSubmit(event) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         profile_id: state.activeProfileId,
-        item_type: selectedType,
+        item_type: "phrase",
         english_text: english,
         vietnamese_meaning: vietnamese,
-        example_sentence: example,
-        ipa_phonetic: ipa,
-        context_note: note
+        example_sentence: "",
+        ipa_phonetic: "",
+        context_note: ""
       })
     });
     
     if (res.ok) {
       playChime('success');
-      form.reset();
-      alert(`🎉 Successfully added ${selectedType} for ${state.activeProfile.name}! Queued for daily SRS review.`);
+      document.getElementById("addItemForm").reset();
+      const preview = document.getElementById("audioInputPreview");
+      if (preview) {
+        preview.src = "";
+        preview.classList.add("hidden");
+      }
+      const txt = document.getElementById("txtInputRecord");
+      if (txt) txt.innerText = "Bấm để ghi âm";
       await updateActiveProfileData();
       switchTab('review');
     } else {
-      alert("Failed to save item. Please check inputs.");
+      alert("Lỗi khi lưu thẻ.");
     }
   } catch (err) {
     console.error("Error creating item:", err);
@@ -731,8 +768,8 @@ async function loadLibraryItems() {
 
 function filterLibrary() {
   const search = document.getElementById("libSearch").value.toLowerCase();
-  const typeFilter = document.getElementById("libTypeFilter").value;
-  const stateFilter = document.getElementById("libStateFilter").value;
+  const typeFilter = document.getElementById("libTypeFilter") ? document.getElementById("libTypeFilter").value : "";
+  const stateFilter = document.getElementById("libStateFilter") ? document.getElementById("libStateFilter").value : "";
   
   const filtered = state.allLibraryItems.filter(item => {
     const matchSearch = !search || 
@@ -755,81 +792,52 @@ function renderLibraryGrid(items) {
     container.innerHTML = `
       <div class="col-span-full text-center py-12 bg-white rounded-3xl border border-slate-200">
         <div class="text-4xl mb-3">🔍</div>
-        <div class="text-base font-bold text-slate-800">No items match your filter</div>
-        <div class="text-xs text-slate-400 mt-1">Try switching filters or add a new collocation!</div>
+        <div class="text-base font-bold text-slate-800">Không tìm thấy thẻ nào</div>
       </div>
     `;
     return;
   }
   
   container.innerHTML = items.map(item => {
-    let typeIcon = "📚";
-    let typeColor = "amber";
-    if (item.item_type === "collocation") { typeIcon = "🔗"; typeColor = "indigo"; }
-    else if (item.item_type === "sentence") { typeIcon = "💬"; typeColor = "emerald"; }
-    
     const isFlipped = state.flippedLibraryItems && state.flippedLibraryItems.has(item.id);
     
     return `
-      <div class="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition flex flex-col justify-between space-y-3">
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition flex flex-col justify-between space-y-3">
         <div>
-          <div class="flex items-center justify-between mb-2">
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-${typeColor}-100 text-${typeColor}-800">
-              <span class="mr-1">${typeIcon}</span> ${item.item_type.toUpperCase()}
-            </span>
-            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${
-              item.state === 'mastered' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-600'
-            }">
-              ${item.state.toUpperCase()}
-            </span>
-          </div>
-
           ${!isFlipped ? `
             <!-- VIETNAMESE ONLY FRONT (Default) -->
-            <div class="space-y-2 py-2">
-              <div class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Nghĩa tiếng Việt</div>
-              <h4 class="text-xl font-extrabold text-slate-900 leading-snug">${escapeHtml(item.vietnamese_meaning)}</h4>
-              <p class="text-xs text-slate-400 italic">Thử nhớ lại từ hoặc câu tiếng Anh trước khi lật thẻ!</p>
+            <div class="space-y-3 py-2">
+              <h4 class="text-xl font-extrabold text-slate-900 leading-snug">🇻🇳 ${escapeHtml(item.vietnamese_meaning)}</h4>
               
               <button onclick="toggleLibraryCardFlip(${item.id})" class="w-full mt-2 py-2.5 px-3 bg-orange-50 hover:bg-orange-100 active:scale-[0.99] text-orange-600 font-extrabold rounded-xl text-xs transition flex items-center justify-center space-x-1.5 border border-orange-200 shadow-sm shadow-orange-100">
                 <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
-                <span>Lật thẻ xem tiếng Anh (Flip Card)</span>
+                <span>Xem tiếng Anh</span>
               </button>
             </div>
           ` : `
             <!-- ENGLISH REVEALED BACK -->
             <div class="space-y-2 py-1">
-              <div class="text-[10px] uppercase font-bold text-orange-600 tracking-wider">English (${item.item_type})</div>
               <div class="flex items-start justify-between gap-2">
-                <h4 class="text-xl font-black text-slate-900 kid-font leading-snug">${escapeHtml(item.english_text)}</h4>
+                <h4 class="text-xl font-black text-slate-900 kid-font leading-snug">🇬🇧 ${escapeHtml(item.english_text)}</h4>
                 <button onclick="speakText('${escapeJsString(item.english_text)}')" class="p-1.5 rounded-xl bg-orange-100 text-orange-700 hover:bg-orange-200 transition flex-shrink-0" title="Nghe phát âm">
                   <i data-lucide="volume-2" class="w-4 h-4"></i>
                 </button>
               </div>
 
-              ${item.ipa_phonetic ? `<div class="text-xs font-mono text-slate-400">${escapeHtml(item.ipa_phonetic)}</div>` : ''}
-
-              <div class="text-xs font-bold text-slate-700 bg-amber-50/80 p-2.5 rounded-xl border border-amber-100/80 mt-1">
+              <div class="text-sm font-bold text-slate-700 bg-amber-50/80 p-2.5 rounded-xl border border-amber-100/80 mt-1">
                 🇻🇳 ${escapeHtml(item.vietnamese_meaning)}
               </div>
 
-              ${item.example_sentence ? `
-                <div class="text-xs text-slate-500 italic bg-slate-50 p-2 rounded-xl border border-slate-100">
-                  "${escapeHtml(item.example_sentence)}"
-                </div>
-              ` : ''}
-
               <button onclick="toggleLibraryCardFlip(${item.id})" class="w-full mt-2 py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl text-xs transition flex items-center justify-center space-x-1 border border-slate-200">
                 <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
-                <span>Ẩn tiếng Anh (Lật lại)</span>
+                <span>Ẩn tiếng Anh</span>
               </button>
             </div>
           `}
         </div>
 
-        <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400 font-medium">
-          <span>Interval: ${item.interval_days}d (${item.repetitions} reps)</span>
-          <button onclick="deleteItem(${item.id})" class="text-rose-500 hover:text-rose-700 font-bold">Delete</button>
+        <div class="pt-2 border-t border-slate-100 flex items-center justify-end text-[11px] text-slate-400 font-medium">
+          <button onclick="deleteItem(${item.id})" class="text-rose-500 hover:text-rose-700 font-bold">Xóa thẻ</button>
         </div>
       </div>
     `;
