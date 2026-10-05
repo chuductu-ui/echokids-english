@@ -317,6 +317,11 @@ function renderCurrentCard() {
               </button>
 
             </div>
+            <div class="mt-3 text-center">
+              <button onclick="flipCard(false)" class="text-xs font-semibold text-slate-400 hover:text-orange-600 underline transition">
+                ↩️ Úp lại mặt tiếng Việt
+              </button>
+            </div>
           </div>
         `}
       </div>
@@ -328,14 +333,16 @@ function renderCurrentCard() {
 }
 
 // Flip Card Action: Simultaneously play English pronunciation!
-function flipCard() {
+function flipCard(flipped = true) {
   playChime('flip');
-  state.isFlipped = true;
+  state.isFlipped = flipped;
   renderCurrentCard();
-  // Simultaneously speak native English audio!
-  setTimeout(() => {
-    speakCurrentText();
-  }, 150);
+  if (flipped) {
+    // Simultaneously speak native English audio!
+    setTimeout(() => {
+      speakCurrentText();
+    }, 150);
+  }
 }
 
 // Toggle Audio-First Mode

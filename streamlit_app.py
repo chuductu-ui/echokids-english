@@ -318,6 +318,13 @@ with st.sidebar:
     active_profile = profile_map[selected_label]
     pid = active_profile["id"]
     
+    # Reset review state when profile switches
+    if st.session_state.get("active_pid") != pid:
+        st.session_state.active_pid = pid
+        st.session_state.card_idx = 0
+        st.session_state.card_flipped = False
+        st.session_state.current_card_id = None
+    
     st.divider()
     
     tld_code = "com"
@@ -431,46 +438,60 @@ with tab_review:
         progress_val = (st.session_state.card_idx + 1) / len(due_cards)
         st.progress(progress_val, text=f"Thẻ {st.session_state.card_idx + 1} / {len(due_cards)}")
 
+        # Ensure each card starts UNFLIPPED (Vietnamese only) by tracking card ID
+        if st.session_state.get("current_card_id") != card["id"]:
+            st.session_state.current_card_id = card["id"]
+            st.session_state.card_flipped = False
+
         # Card Container Box
         card_box = st.container(border=True)
         with card_box:
             if not st.session_state.card_flipped:
-                # VIETNAMESE-FIRST MODE: Prompt child with Vietnamese meaning
+                # FRONT: VIETNAMESE ONLY (NO ENGLISH, NO AUDIO)
                 st.caption("🇻🇳 Nghĩa tiếng Việt:")
-                st.markdown(f"## :orange[**{card['vietnamese_meaning']}**]")
-                st.markdown("##### 🤔 *Bé hãy nhớ và phát âm từ/câu này bằng tiếng Anh, sau đó lật thẻ để kiểm tra nhé!*")
+                st.markdown(f"# :orange[**{card['vietnamese_meaning']}**]")
+                st.markdown("##### 🤔 *Bé hãy nhớ và phát âm từ/câu này bằng tiếng Anh, sau đó bấm nút lật thẻ để kiểm tra nhé!*")
                 
-                if st.button("🔄 Lật thẻ xem tiếng Anh & Nghe phát âm", type="primary", use_container_width=True):
+                if st.button("🔄 LẬT THẺ SANG TIẾNG ANH & NGHE PHÁT ÂM", type="primary", use_container_width=True):
                     st.session_state.card_flipped = True
                     st.rerun()
             else:
-                # Revealed View: English text + auto-play English audio
+                # BACK: REVEALED ENGLISH + AUTOMATIC AUDIO
                 st.caption("🇬🇧 Tiếng Anh:")
-                st.markdown(f"## **{card['english_text']}**")
-                st.markdown(f"### 🇻🇳 :orange[**{card['vietnamese_meaning']}**]")
+                st.markdown(f"# **{card['english_text']}**")
+                st.markdown(f"#### 🇻🇳 Nghĩa: :orange[**{card['vietnamese_meaning']}**]")
                 
                 # Simultaneously play English pronunciation audio!
                 audio_bytes = generate_audio(card["english_text"], tld=tld_code)
                 if audio_bytes:
                     st.audio(audio_bytes, format="audio/mp3", autoplay=True)
+
+                if st.button("↩️ Úp thẻ lại (Chỉ xem Tiếng Việt)", use_container_width=True):
+                    st.session_state.card_flipped = False
+                    st.rerun()
                 
+                st.divider()
+                st.caption("Bé nhớ từ này như thế nào?")
                 rcol1, rcol2, rcol3 = st.columns(3)
                 with rcol1:
                     if st.button("🌱 Học lại", use_container_width=True):
                         submit_srs_review(card["id"], pid, 1)
                         st.session_state.card_flipped = False
+                        st.session_state.current_card_id = None
                         st.session_state.card_idx += 1
                         st.rerun()
                 with rcol2:
                     if st.button("👍 Nhớ tốt", use_container_width=True):
                         submit_srs_review(card["id"], pid, 2)
                         st.session_state.card_flipped = False
+                        st.session_state.current_card_id = None
                         st.session_state.card_idx += 1
                         st.rerun()
                 with rcol3:
                     if st.button("🌟 Rất dễ", type="primary", use_container_width=True):
                         submit_srs_review(card["id"], pid, 3)
                         st.session_state.card_flipped = False
+                        st.session_state.current_card_id = None
                         st.session_state.card_idx += 1
                         st.rerun()
 
