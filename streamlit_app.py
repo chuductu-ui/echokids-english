@@ -306,6 +306,16 @@ def submit_srs_review(item_id: int, profile_id: int, rating: int):
     # Auto-sync snapshot to Google Drive archive
     sync_to_google_drive_archive()
 
+def delete_item(item_id: int):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM review_logs WHERE item_id = ?", (item_id,))
+    cursor.execute("DELETE FROM srs_cards WHERE item_id = ?", (item_id,))
+    cursor.execute("DELETE FROM items WHERE id = ?", (item_id,))
+    conn.commit()
+    conn.close()
+    sync_to_google_drive_archive()
+
 # --- Sidebar: Child Profile Switcher & Settings ---
 profiles = load_profiles()
 profile_map = {f"{p['avatar']} {p['name']} ({p['age']}y)": p for p in profiles}
@@ -579,18 +589,34 @@ with tab_library:
         with card_box:
             if not is_flipped:
                 st.markdown(f"### 🇻🇳 {it['vietnamese_meaning']}")
-                if st.button("🔄 Xem tiếng Anh", key=f"flip_{it['id']}", type="primary", use_container_width=True):
-                    st.session_state.flipped_library_cards.add(it["id"])
-                    st.rerun()
+                bcol1, bcol2 = st.columns([3, 1])
+                with bcol1:
+                    if st.button("🔄 Xem tiếng Anh", key=f"flip_{it['id']}", type="primary", use_container_width=True):
+                        st.session_state.flipped_library_cards.add(it["id"])
+                        st.rerun()
+                with bcol2:
+                    if st.button("🗑️ Xóa", key=f"del_{it['id']}", use_container_width=True):
+                        delete_item(it["id"])
+                        st.session_state.flipped_library_cards.discard(it["id"])
+                        st.toast(f"🗑️ Đã xóa: {it['vietnamese_meaning']}")
+                        st.rerun()
             else:
                 st.markdown(f"## 🇬🇧 {it['english_text']}")
-                
-                item_audio = generate_audio(it["english_text"], tld=tld_code)
-                if item_audio:
-                    st.audio(item_audio, format="audio/mp3", autoplay=True)
-                    
                 st.markdown(f"**Nghĩa:** :orange[**{it['vietnamese_meaning']}**]")
                 
-                if st.button("↩️ Ẩn tiếng Anh", key=f"unflip_{it['id']}", use_container_width=True):
-                    st.session_state.flipped_library_cards.remove(it["id"])
-                    st.rerun()
+                # Audio player: autoplay=False prevents audio overlap and StreamlitDuplicateElementId errors
+                item_audio = generate_audio(it["english_text"], tld=tld_code)
+                if item_audio:
+                    st.audio(item_audio, format="audio/mp3", autoplay=False)
+                    
+                bcol1, bcol2 = st.columns([3, 1])
+                with bcol1:
+                    if st.button("↩️ Ẩn tiếng Anh", key=f"unflip_{it['id']}", use_container_width=True):
+                        st.session_state.flipped_library_cards.discard(it["id"])
+                        st.rerun()
+                with bcol2:
+                    if st.button("🗑️ Xóa", key=f"del_flip_{it['id']}", use_container_width=True):
+                        delete_item(it["id"])
+                        st.session_state.flipped_library_cards.discard(it["id"])
+                        st.toast(f"🗑️ Đã xóa: {it['english_text']}")
+                        st.rerun()
