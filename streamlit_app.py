@@ -8,6 +8,7 @@ import os
 import io
 import json
 import sqlite3
+import urllib.parse
 from datetime import datetime, date, timedelta
 from typing import Dict, Any, List, Optional
 import streamlit as st
@@ -325,18 +326,39 @@ with st.sidebar:
     
     # QR Code for Mobile / iPad / iPhone
     st.subheader("📱 Quét QR mở trên iPad / iPhone")
-    cloud_url = "https://echokids-english.streamlit.app"
-    qr_img_url = f"https://api.qrserver.com/v1/create-qr-code/?size=240x240&data={cloud_url}"
-    st.image(qr_img_url, caption="Mở Camera trên iPad/iPhone quét để học ngay", use_container_width=True)
-    st.link_button("🌐 Mở liên kết Cloud", cloud_url, use_container_width=True)
-    with st.expander("💡 Mở cho mọi máy (Không cần đăng nhập)"):
+    
+    detected_host = ""
+    try:
+        if hasattr(st, "context") and hasattr(st.context, "headers"):
+            detected_host = st.context.headers.get("host", "")
+    except Exception:
+        pass
+
+    if detected_host and not detected_host.startswith("localhost") and not detected_host.startswith("127.0.0.1"):
+        default_cloud_url = f"https://{detected_host}"
+    else:
+        default_cloud_url = "https://echokids-english.streamlit.app"
+
+    # User input to verify or paste exact Streamlit URL if needed
+    active_cloud_url = st.text_input(
+        "🔗 Link Streamlit Cloud:", 
+        value=default_cloud_url,
+        help="Nếu link trên thanh địa chỉ của anh khác link này, hãy dán link thực tế vào đây để tạo mã QR chuẩn 100%."
+    ).strip()
+    
+    if not active_cloud_url:
+        active_cloud_url = default_cloud_url
+
+    qr_img_url = f"https://api.qrserver.com/v1/create-qr-code/?size=240x240&data={urllib.parse.quote(active_cloud_url)}"
+    st.image(qr_img_url, caption=f"Quét để mở: {active_cloud_url}", use_container_width=True)
+    st.link_button("🌐 Mở liên kết Cloud", active_cloud_url, use_container_width=True)
+    
+    with st.expander("💡 Khắc phục lỗi 'You do not have access...'"):
         st.markdown(
             """
-            **Nếu iPad/iPhone quét báo lỗi "You do not have access...":**
-            1. Mở [share.streamlit.io](https://share.streamlit.io) trên máy tính (nơi anh đang đăng nhập).
-            2. Bấm nút **⋮** bên cạnh app > **Settings > Sharing**.
-            3. Chuyển sang **Public** *(Anyone with the link can view)*.
-            4. Bấm **Save**.
+            **Nếu iPad/iPhone quét bị báo lỗi quyền truy cập:**
+            1. **Kiểm tra đúng Link thực tế**: Nhìn lên thanh địa chỉ trình duyệt PC xem link thực tế của app là gì và copy dán vào ô bên trên.
+            2. **Bật Public**: Vào [share.streamlit.io](https://share.streamlit.io) > Bấm nút **⋮** cạnh app > **Settings > Sharing** > Chọn **Public** > Bấm **Save**.
             """
         )
     
