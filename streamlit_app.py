@@ -329,6 +329,16 @@ with st.sidebar:
     qr_img_url = f"https://api.qrserver.com/v1/create-qr-code/?size=240x240&data={cloud_url}"
     st.image(qr_img_url, caption="Mở Camera trên iPad/iPhone quét để học ngay", use_container_width=True)
     st.link_button("🌐 Mở liên kết Cloud", cloud_url, use_container_width=True)
+    with st.expander("💡 Mở cho mọi máy (Không cần đăng nhập)"):
+        st.markdown(
+            """
+            **Nếu iPad/iPhone quét báo lỗi "You do not have access...":**
+            1. Mở [share.streamlit.io](https://share.streamlit.io) trên máy tính (nơi anh đang đăng nhập).
+            2. Bấm nút **⋮** bên cạnh app > **Settings > Sharing**.
+            3. Chuyển sang **Public** *(Anyone with the link can view)*.
+            4. Bấm **Save**.
+            """
+        )
     
     st.divider()
     

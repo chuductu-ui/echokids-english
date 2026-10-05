@@ -1083,6 +1083,52 @@ function startVoiceInput(lang, targetInputId, btnId) {
 // ==========================================
 // QR Code Modal for Mobile / iPad
 // ==========================================
+let currentQrSource = 'local';
+const LOCAL_HOST_URL = window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1')
+  ? `http://${window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? '192.168.1.156' : window.location.hostname}:8000`
+  : window.location.origin;
+const CLOUD_APP_URL = 'https://echokids-english.streamlit.app';
+
+function switchQrSource(source) {
+  currentQrSource = source;
+  const btnLocal = document.getElementById("tabQrLocal");
+  const btnCloud = document.getElementById("tabQrCloud");
+  const qrImg = document.getElementById("qrImageModal");
+  const infoText = document.getElementById("qrInfoText");
+  const openBtn = document.getElementById("qrOpenBtn");
+  const cloudNotice = document.getElementById("qrCloudNotice");
+
+  if (source === 'local') {
+    if (btnLocal) btnLocal.className = "flex-1 py-2 rounded-lg bg-white text-orange-600 shadow-sm transition";
+    if (btnCloud) btnCloud.className = "flex-1 py-2 rounded-lg text-slate-600 hover:text-slate-900 transition";
+    const targetUrl = LOCAL_HOST_URL;
+    if (qrImg) qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(targetUrl)}`;
+    if (openBtn) {
+      openBtn.href = targetUrl;
+      openBtn.innerText = "Mở trực tiếp link Wi-Fi Nhà 🚀";
+    }
+    if (infoText) {
+      infoText.className = "text-xs text-slate-600 mb-3 bg-amber-50 p-2.5 rounded-xl border border-amber-200/70 text-left";
+      infoText.innerHTML = `<strong>🏠 Chế độ Wi-Fi gia đình:</strong> iPad / iPhone chỉ cần chung Wi-Fi nhà là vào học ngay lập tức, 100% không cần đăng nhập tài khoản.`;
+    }
+    if (cloudNotice) cloudNotice.classList.add("hidden");
+  } else {
+    if (btnCloud) btnCloud.className = "flex-1 py-2 rounded-lg bg-white text-orange-600 shadow-sm transition";
+    if (btnLocal) btnLocal.className = "flex-1 py-2 rounded-lg text-slate-600 hover:text-slate-900 transition";
+    const targetUrl = CLOUD_APP_URL;
+    if (qrImg) qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(targetUrl)}`;
+    if (openBtn) {
+      openBtn.href = targetUrl;
+      openBtn.innerText = "Mở Streamlit Cloud Link 🚀";
+    }
+    if (infoText) {
+      infoText.className = "text-xs text-slate-600 mb-3 bg-indigo-50 p-2.5 rounded-xl border border-indigo-200/70 text-left";
+      infoText.innerHTML = `<strong>🌐 Chế độ Cloud Online:</strong> Truy cập được từ mọi nơi kể cả 4G/5G khi ra ngoài đường. (Cần đặt Sharing: Public trên Streamlit Cloud).`;
+    }
+    if (cloudNotice) cloudNotice.classList.remove("hidden");
+  }
+}
+
 function toggleQrModal(show) {
   const modal = document.getElementById("qrModal");
   if (!modal) return;
@@ -1090,15 +1136,14 @@ function toggleQrModal(show) {
     modal.classList.toggle("hidden");
   } else if (show) {
     modal.classList.remove("hidden");
+    switchQrSource(currentQrSource);
   } else {
     modal.classList.add("hidden");
   }
 }
 
 function copyAppUrl() {
-  const url = (window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1'))
-    ? 'https://echokids-english.streamlit.app'
-    : window.location.href;
+  const url = currentQrSource === 'local' ? LOCAL_HOST_URL : CLOUD_APP_URL;
   navigator.clipboard.writeText(url).then(() => {
     const btn = document.getElementById("btnCopyAppUrl");
     if (btn) {

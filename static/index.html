@@ -422,27 +422,50 @@
 
   <!-- QR Code Modal for Mobile / iPad -->
   <div id="qrModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-sm w-full text-center shadow-2xl border border-slate-100 relative animate-in fade-in zoom-in duration-200">
+    <div class="bg-white rounded-3xl p-6 sm:p-7 max-w-md w-full text-center shadow-2xl border border-slate-100 relative animate-in fade-in zoom-in duration-200">
       <button onclick="toggleQrModal(false)" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 font-bold transition">
         ✕
       </button>
-      <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center text-2xl shadow-sm">
+      
+      <div class="w-12 h-12 mx-auto mb-2.5 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center text-2xl shadow-sm">
         📱
       </div>
       <h3 class="text-xl font-extrabold text-slate-900 kid-font mb-1">Mở trên iPad & iPhone</h3>
-      <p class="text-xs text-slate-500 mb-4">Dùng Camera quét mã QR bên dưới để mở ngay trên điện thoại hoặc máy tính bảng:</p>
+      <p class="text-xs text-slate-500 mb-4">Dùng Camera điện thoại hoặc máy tính bảng để quét mã QR:</p>
+
+      <!-- Tabs: Local Wi-Fi vs Streamlit Cloud -->
+      <div class="flex p-1 bg-slate-100 rounded-xl mb-4 text-xs font-bold">
+        <button id="tabQrLocal" onclick="switchQrSource('local')" class="flex-1 py-2 rounded-lg bg-white text-orange-600 shadow-sm transition">
+          🏠 Wi-Fi Nhà (Cực nhanh, vào luôn)
+        </button>
+        <button id="tabQrCloud" onclick="switchQrSource('cloud')" class="flex-1 py-2 rounded-lg text-slate-600 hover:text-slate-900 transition">
+          🌐 Online Mọi nơi (Cloud)
+        </button>
+      </div>
       
-      <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 inline-block shadow-inner mb-4">
-        <img id="qrImageModal" src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=https%3A%2F%2Fechokids-english.streamlit.app" alt="QR Code" class="w-48 h-48 mx-auto rounded-xl shadow-sm">
+      <!-- QR Image Box -->
+      <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 inline-block shadow-inner mb-3">
+        <img id="qrImageModal" src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=http%3A%2F%2F192.168.1.156%3A8000" alt="QR Code" class="w-48 h-48 mx-auto rounded-xl shadow-sm">
+      </div>
+
+      <!-- Current Link Info -->
+      <div id="qrInfoText" class="text-xs text-slate-600 mb-3 bg-amber-50 p-2.5 rounded-xl border border-amber-200/70 text-left">
+        <strong>🏠 Chế độ Wi-Fi gia đình:</strong> iPad / iPhone chỉ cần chung Wi-Fi nhà là vào học ngay lập tức, 100% không cần đăng nhập tài khoản.
       </div>
 
       <div class="space-y-2">
-        <a href="https://echokids-english.streamlit.app" target="_blank" class="block w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl text-xs transition shadow-md shadow-orange-200">
-          Mở Streamlit Cloud Link 🚀
+        <a id="qrOpenBtn" href="http://192.168.1.156:8000" target="_blank" class="block w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl text-xs transition shadow-md shadow-orange-200">
+          Mở trực tiếp đường link 🚀
         </a>
         <button onclick="copyAppUrl()" class="block w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs transition" id="btnCopyAppUrl">
           📋 Sao chép link trang web
         </button>
+      </div>
+
+      <!-- Cloud Access Fix Notice -->
+      <div id="qrCloudNotice" class="hidden mt-3 pt-3 border-t border-slate-100 text-[11px] text-slate-500 text-left leading-relaxed">
+        💡 <strong>Nếu quét Streamlit báo lỗi "You do not have access...":</strong><br>
+        Vào <a href="https://share.streamlit.io" target="_blank" class="text-orange-600 underline font-semibold">share.streamlit.io</a> trên máy tính &gt; Bấm nút <code>⋮</code> ở app &gt; <strong>Settings &gt; Sharing</strong> &gt; Chuyển sang <strong>Public (Anyone with the link)</strong> &gt; Bấm <strong>Save</strong>.
       </div>
     </div>
   </div>
