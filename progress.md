@@ -65,6 +65,23 @@ Both FastAPI PWA and Streamlit Cloud solutions are fully operational with Google
 
 ## Session 4: Automated Online Deployment Execution
 - **Goal**: Create Google Spreadsheet in user's Google Drive, initialize Git, push to GitHub, and link Streamlit Cloud.
-- **In Progress**:
-  - Creating Google Sheet in user's Google Drive via `google-workspace` MCP.
-  - Setting up Git repo and pushing to GitHub via `gh repo create`.
+- **Completed**:
+  - Created live Google Spreadsheet in user's Google Drive via `google-workspace` MCP: **"EchoKids English - Learning Database"** (ID: `1LU4SAghihRdM_ivhDizHLKi6vKPVlYL2ppHWNrUhJ_c`). Populated with 29 initial words, collocations, and sentences.
+  - Initialized Git, created `.gitignore`, `.streamlit/config.toml`, `.streamlit/secrets.toml.example`.
+  - Created GitHub repository **`chuductu-ui/echokids-english`** via `gh repo create` and pushed all source code to `origin main`.
+  - Configured `streamlit_app.py` with direct link to Google Sheet.
+  - Generated 1-click Streamlit Cloud direct deploy URL: `https://share.streamlit.io/deploy?repository=chuductu-ui/echokids-english&branch=main&mainModule=streamlit_app.py`.
+
+## Session 5: Library Vietnamese-First Flip Cards & Google Drive Relocation
+- **Goal**: Relocate Google Sheet to folder `1OfwAewoRPK-xGAH_O-UUQk577GK3XymP` and update "My Library" to show Vietnamese-only with a flip card button.
+- **Completed**:
+  - Moved Google Spreadsheet `1LU4SAghihRdM_ivhDizHLKi6vKPVlYL2ppHWNrUhJ_c` into Google Drive folder `1OfwAewoRPK-xGAH_O-UUQk577GK3XymP` using `google-workspace` `moveFile`.
+  - Updated `streamlit_app.py`: "My Library" now shows Vietnamese meaning only by default with an interactive "Flip Card" button to reveal English, native audio player, and example sentences. Added "Flip All" / "Hide All" controls.
+  - Updated `static/app.js` and `static/index.html`: "My Library" in the FastAPI web app now displays Vietnamese only by default with a "Flip Card" button and global flip controls.
+  - Added direct links to the Google Drive folder in both applications and in `README.md`.
+  - Updated `.gitignore` to ignore Google Drive shortcut files.
+
+---
+
+## Final Status
+All features, library flip cards, Google Drive relocation, and cloud sync are 100% complete and operational.

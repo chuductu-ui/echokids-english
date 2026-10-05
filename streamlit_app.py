@@ -493,26 +493,70 @@ with tab_library:
     with l_col2:
         filter_type = st.selectbox("Filter Category:", ["All", "collocation", "sentence", "word"])
 
+    if "flipped_library_cards" not in st.session_state:
+        st.session_state.flipped_library_cards = set()
+
     filtered_items = all_items
     if search_query:
         filtered_items = [it for it in filtered_items if search_query.lower() in it["english_text"].lower() or search_query.lower() in it["vietnamese_meaning"].lower()]
     if filter_type != "All":
         filtered_items = [it for it in filtered_items if it["item_type"] == filter_type]
         
-    st.caption(f"Showing {len(filtered_items)} items")
-    
+    fcol1, fcol2, fcol3 = st.columns([2, 1, 1])
+    with fcol1:
+        st.caption(f"Showing {len(filtered_items)} learning cards (Vietnamese prompt by default)")
+    with fcol2:
+        if st.button("🔄 Lật tất cả (Flip All)", use_container_width=True):
+            st.session_state.flipped_library_cards = {it["id"] for it in filtered_items}
+            st.rerun()
+    with fcol3:
+        if st.button("🔒 Ẩn tất cả (Hide All)", use_container_width=True):
+            st.session_state.flipped_library_cards.clear()
+            st.rerun()
+
     for it in filtered_items:
-        with st.expander(f"{'🔗' if it['item_type']=='collocation' else ('💬' if it['item_type']=='sentence' else '📚')} {it['english_text']} — {it['vietnamese_meaning']} [{it['state'].upper()}]"):
-            st.markdown(f"**English:** {it['english_text']}")
-            st.markdown(f"**Meaning:** {it['vietnamese_meaning']}")
-            if it["example_sentence"]:
-                st.markdown(f"*Example:* \"{it['example_sentence']}\"")
-            st.caption(f"Interval: {it['interval_days']} days • Repetitions: {it['repetitions']} • Next Due: {it['due_date']}")
-            
-            # Sound button
-            item_audio = generate_audio(it["english_text"], tld=tld_code)
-            if item_audio:
-                st.audio(item_audio, format="audio/mp3")
+        card_box = st.container(border=True)
+        is_flipped = it["id"] in st.session_state.flipped_library_cards
+        badge_icon = "🔗" if it["item_type"] == "collocation" else ("💬" if it["item_type"] == "sentence" else "📚")
+        
+        with card_box:
+            # Top row: Type badge & Mastery state
+            head_col1, head_col2 = st.columns([3, 1])
+            with head_col1:
+                st.markdown(f"**{badge_icon} {it['item_type'].upper()}** • State: `{it['state'].upper()}`")
+            with head_col2:
+                st.caption(f"Due: {it['due_date']}")
+
+            if not is_flipped:
+                # VIETNAMESE ONLY MODE (Default)
+                st.markdown(f"### 🇻🇳 {it['vietnamese_meaning']}")
+                st.caption("Thử nhớ và phát âm tiếng Anh tương ứng trước khi lật thẻ!")
+                
+                if st.button("🔄 Lật thẻ xem tiếng Anh (Flip Card)", key=f"flip_{it['id']}", type="primary", use_container_width=True):
+                    st.session_state.flipped_library_cards.add(it["id"])
+                    st.rerun()
+            else:
+                # FLIPPED / ENGLISH REVEALED
+                st.markdown(f"## 🇬🇧 {it['english_text']}")
+                if it["ipa_phonetic"]:
+                    st.caption(f"Phonetic: `{it['ipa_phonetic']}`")
+                
+                # Audio playback for revealed English
+                item_audio = generate_audio(it["english_text"], tld=tld_code)
+                if item_audio:
+                    st.audio(item_audio, format="audio/mp3", autoplay=True)
+                    
+                st.markdown(f"**Nghĩa tiếng Việt:** :orange[**{it['vietnamese_meaning']}**]")
+                if it["example_sentence"]:
+                    st.info(f"💡 *Example:* \"{it['example_sentence']}\"")
+                if it["context_note"]:
+                    st.caption(f"Note: {it['context_note']}")
+                    
+                st.caption(f"Interval: {it['interval_days']}d • Repetitions: {it['repetitions']}")
+                
+                if st.button("↩️ Ẩn tiếng Anh (Lật lại)", key=f"unflip_{it['id']}", use_container_width=True):
+                    st.session_state.flipped_library_cards.remove(it["id"])
+                    st.rerun()
 
 # ==========================================
 # TAB 4: GOOGLE DRIVE & CLOUD GUIDE
@@ -520,15 +564,22 @@ with tab_library:
 with tab_gdrive:
     st.subheader("☁️ Google Drive Architecture & Cloud Sync")
     
-    st.success("✅ **Live Google Spreadsheet Created in Your Google Drive!**")
+    st.success("✅ **Live Google Spreadsheet Moved to Target Google Drive Folder!**")
     sheet_url = "https://docs.google.com/spreadsheets/d/1LU4SAghihRdM_ivhDizHLKi6vKPVlYL2ppHWNrUhJ_c/edit?authuser=tucd"
-    st.link_button("📊 Open EchoKids Google Sheet in Google Drive", sheet_url, type="primary")
+    folder_url = "https://drive.google.com/drive/folders/1OfwAewoRPK-xGAH_O-UUQk577GK3XymP?authuser=tucd"
+    
+    col_link1, col_link2 = st.columns(2)
+    with col_link1:
+        st.link_button("📊 Open EchoKids Google Sheet", sheet_url, type="primary", use_container_width=True)
+    with col_link2:
+        st.link_button("📁 Open Target Google Drive Folder", folder_url, use_container_width=True)
     
     st.markdown("""
     ### How Google Drive Synchronization Works:
     
-    1. **Live Google Sheet inside Your Google Drive**:
-       - The spreadsheet **`EchoKids English - Learning Database`** is now active in your Google Drive.
+    1. **Live Google Sheet in Your Specified Folder**:
+       - The spreadsheet **`EchoKids English - Learning Database`** is safely stored in your dedicated folder:
+         [**View Folder**](https://drive.google.com/drive/folders/1OfwAewoRPK-xGAH_O-UUQk577GK3XymP?authuser=tucd).
        - You can open it on your smartphone or PC anytime to view or bulk-add new collocations!
     2. **Deploying on Streamlit Community Cloud (`share.streamlit.io`)**:
        - When you deploy this repository to free Streamlit Cloud, it runs **24/7 online**.

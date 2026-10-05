@@ -15,7 +15,8 @@ let state = {
   recognition: null,
   mediaRecorder: null,
   audioChunks: [],
-  userAudioUrl: null
+  userAudioUrl: null,
+  flippedLibraryItems: new Set()
 };
 
 // Web Audio API Sound Effects
@@ -767,6 +768,8 @@ function renderLibraryGrid(items) {
     if (item.item_type === "collocation") { typeIcon = "🔗"; typeColor = "indigo"; }
     else if (item.item_type === "sentence") { typeIcon = "💬"; typeColor = "emerald"; }
     
+    const isFlipped = state.flippedLibraryItems && state.flippedLibraryItems.has(item.id);
+    
     return `
       <div class="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition flex flex-col justify-between space-y-3">
         <div>
@@ -781,22 +784,47 @@ function renderLibraryGrid(items) {
             </span>
           </div>
 
-          <div class="flex items-start justify-between gap-2">
-            <h4 class="text-lg font-extrabold text-slate-900 kid-font leading-snug">${escapeHtml(item.english_text)}</h4>
-            <button onclick="speakText('${escapeJsString(item.english_text)}')" class="p-1.5 rounded-xl bg-orange-50 text-orange-600 hover:bg-orange-100 transition flex-shrink-0">
-              <i data-lucide="volume-2" class="w-4 h-4"></i>
-            </button>
-          </div>
-
-          ${item.ipa_phonetic ? `<div class="text-xs font-mono text-slate-400 mt-0.5">${escapeHtml(item.ipa_phonetic)}</div>` : ''}
-
-          <div class="text-xs font-bold text-slate-700 mt-2">${escapeHtml(item.vietnamese_meaning)}</div>
-
-          ${item.example_sentence ? `
-            <div class="text-xs text-slate-500 italic mt-2 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-              "${escapeHtml(item.example_sentence)}"
+          ${!isFlipped ? `
+            <!-- VIETNAMESE ONLY FRONT (Default) -->
+            <div class="space-y-2 py-2">
+              <div class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Nghĩa tiếng Việt</div>
+              <h4 class="text-xl font-extrabold text-slate-900 leading-snug">${escapeHtml(item.vietnamese_meaning)}</h4>
+              <p class="text-xs text-slate-400 italic">Thử nhớ lại từ hoặc câu tiếng Anh trước khi lật thẻ!</p>
+              
+              <button onclick="toggleLibraryCardFlip(${item.id})" class="w-full mt-2 py-2.5 px-3 bg-orange-50 hover:bg-orange-100 active:scale-[0.99] text-orange-600 font-extrabold rounded-xl text-xs transition flex items-center justify-center space-x-1.5 border border-orange-200 shadow-sm shadow-orange-100">
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                <span>Lật thẻ xem tiếng Anh (Flip Card)</span>
+              </button>
             </div>
-          ` : ''}
+          ` : `
+            <!-- ENGLISH REVEALED BACK -->
+            <div class="space-y-2 py-1">
+              <div class="text-[10px] uppercase font-bold text-orange-600 tracking-wider">English (${item.item_type})</div>
+              <div class="flex items-start justify-between gap-2">
+                <h4 class="text-xl font-black text-slate-900 kid-font leading-snug">${escapeHtml(item.english_text)}</h4>
+                <button onclick="speakText('${escapeJsString(item.english_text)}')" class="p-1.5 rounded-xl bg-orange-100 text-orange-700 hover:bg-orange-200 transition flex-shrink-0" title="Nghe phát âm">
+                  <i data-lucide="volume-2" class="w-4 h-4"></i>
+                </button>
+              </div>
+
+              ${item.ipa_phonetic ? `<div class="text-xs font-mono text-slate-400">${escapeHtml(item.ipa_phonetic)}</div>` : ''}
+
+              <div class="text-xs font-bold text-slate-700 bg-amber-50/80 p-2.5 rounded-xl border border-amber-100/80 mt-1">
+                🇻🇳 ${escapeHtml(item.vietnamese_meaning)}
+              </div>
+
+              ${item.example_sentence ? `
+                <div class="text-xs text-slate-500 italic bg-slate-50 p-2 rounded-xl border border-slate-100">
+                  "${escapeHtml(item.example_sentence)}"
+                </div>
+              ` : ''}
+
+              <button onclick="toggleLibraryCardFlip(${item.id})" class="w-full mt-2 py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl text-xs transition flex items-center justify-center space-x-1 border border-slate-200">
+                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                <span>Ẩn tiếng Anh (Lật lại)</span>
+              </button>
+            </div>
+          `}
         </div>
 
         <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400 font-medium">
@@ -808,6 +836,28 @@ function renderLibraryGrid(items) {
   }).join('');
   
   lucide.createIcons();
+}
+
+function toggleLibraryCardFlip(itemId) {
+  if (!state.flippedLibraryItems) state.flippedLibraryItems = new Set();
+  if (state.flippedLibraryItems.has(itemId)) {
+    state.flippedLibraryItems.delete(itemId);
+  } else {
+    state.flippedLibraryItems.add(itemId);
+    playChime('flip');
+  }
+  filterLibrary();
+}
+
+function flipAllLibraryCards(flip) {
+  if (!state.flippedLibraryItems) state.flippedLibraryItems = new Set();
+  if (flip) {
+    state.allLibraryItems.forEach(it => state.flippedLibraryItems.add(it.id));
+    playChime('star');
+  } else {
+    state.flippedLibraryItems.clear();
+  }
+  filterLibrary();
 }
 
 async function deleteItem(id) {

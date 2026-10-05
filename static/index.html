@@ -368,6 +368,18 @@
             <option value="learning">🌱 Learning</option>
             <option value="new">✨ New</option>
           </select>
+
+          <!-- Flip Controls -->
+          <div class="flex items-center space-x-1.5 ml-1">
+            <button onclick="flipAllLibraryCards(true)" class="px-3 py-2 bg-orange-50 hover:bg-orange-100 text-orange-600 rounded-xl text-xs font-bold transition flex items-center space-x-1 border border-orange-200" title="Lật tất cả thẻ sang tiếng Anh">
+              <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+              <span>Lật tất cả</span>
+            </button>
+            <button onclick="flipAllLibraryCards(false)" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition flex items-center space-x-1" title="Ẩn tiếng Anh, hiện nghĩa tiếng Việt">
+              <i data-lucide="eye-off" class="w-3.5 h-3.5"></i>
+              <span>Ẩn tất cả</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -432,6 +444,14 @@
         <h3 class="text-base font-extrabold text-slate-900">Parent Data & System Controls</h3>
         <p class="text-xs text-slate-500">Export backups, seed sample age-appropriate decks, or reset intervals.</p>
         <div class="flex flex-wrap gap-3">
+          <a href="https://drive.google.com/drive/folders/1OfwAewoRPK-xGAH_O-UUQk577GK3XymP?authuser=tucd" target="_blank" class="px-4 py-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 rounded-xl text-xs font-bold transition flex items-center space-x-1.5">
+            <i data-lucide="folder" class="w-3.5 h-3.5"></i>
+            <span>Open Google Drive Folder</span>
+          </a>
+          <a href="https://docs.google.com/spreadsheets/d/1LU4SAghihRdM_ivhDizHLKi6vKPVlYL2ppHWNrUhJ_c/edit?authuser=tucd" target="_blank" class="px-4 py-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-800 rounded-xl text-xs font-bold transition flex items-center space-x-1.5">
+            <i data-lucide="table" class="w-3.5 h-3.5"></i>
+            <span>Open Google Spreadsheet</span>
+          </a>
           <button onclick="exportData()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition flex items-center space-x-1.5">
             <i data-lucide="download" class="w-3.5 h-3.5"></i>
             <span>Export Backup (JSON)</span>

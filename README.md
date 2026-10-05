@@ -46,13 +46,33 @@ python app.py
 
 ---
 
+---
+
+## ☁️ Online Cloud & Google Drive Integration
+
+1. **Google Drive Dedicated Folder**:
+   - Folder: [**Open Google Drive Folder**](https://drive.google.com/drive/folders/1OfwAewoRPK-xGAH_O-UUQk577GK3XymP?authuser=tucd)
+   - Live Spreadsheet: [**EchoKids English - Learning Database**](https://docs.google.com/spreadsheets/d/1LU4SAghihRdM_ivhDizHLKi6vKPVlYL2ppHWNrUhJ_c/edit?authuser=tucd)
+2. **Streamlit Cloud Deployment**:
+   - GitHub Repo: [https://github.com/chuductu-ui/echokids-english](https://github.com/chuductu-ui/echokids-english)
+   - 1-Click Deploy Link: [https://share.streamlit.io/deploy?repository=chuductu-ui/echokids-english&branch=main&mainModule=streamlit_app.py](https://share.streamlit.io/deploy?repository=chuductu-ui/echokids-english&branch=main&mainModule=streamlit_app.py)
+3. **My Library Vietnamese-First Flip Cards**:
+   - Cards in "My Library" display Vietnamese meaning by default to prompt active English recall.
+   - Click "Lật thẻ xem tiếng Anh (Flip Card)" to reveal English spelling, native TTS audio, and example sentences.
+
+---
+
 ## 📁 Project Structure
 
 ```
 G:\My Drive\CODE\8. English\
 ├── app.py                  # FastAPI server, SQLite database schema, REST APIs, and SRS engine
+├── streamlit_app.py        # Streamlit Cloud edition with Google Drive/Sheets sync & audio
 ├── database.sqlite         # Persistent local database (Profiles, Items, SRS Cards, Review Logs)
-├── run.bat                 # 1-click Windows launcher
+├── run.bat                 # 1-click Windows launcher for FastAPI
+├── run_streamlit.bat       # 1-click Windows launcher for Streamlit
+├── launch.vbs              # Silent background launcher for Desktop shortcut
+├── start_online_tunnel.bat # 1-click public cloud tunnel for mobile/iPad access
 ├── README.md               # Quick start & technical reference
 ├── Pedagogical_Guide.md    # In-depth teaching handbook for listening & speaking (Ages 7 & 11)
 ├── task_plan.md            # Active phase tracking file
@@ -60,7 +80,11 @@ G:\My Drive\CODE\8. English\
 ├── progress.md             # Session history log
 └── static/
     ├── index.html          # Responsive single-page application with Tailwind CSS & Lucide icons
-    └── app.js              # Web Speech API TTS, Speech Recognition, MediaRecorder, SRS card logic
+    ├── app.js              # Web Speech API TTS, Speech Recognition, MediaRecorder, SRS card logic
+    ├── manifest.json       # PWA manifest for 1-tap iPad/iPhone home screen install
+    ├── sw.js               # PWA service worker
+    ├── icon-192.png        # PWA app icon
+    └── icon-512.png        # High-res PWA app icon
 ```
 
 ---

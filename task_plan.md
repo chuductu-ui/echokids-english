@@ -65,12 +65,20 @@ Design and architect a comprehensive English learning, monitoring, and Spaced Re
 - **Status**: complete
 
 ### Phase 8: Automated Execution (Google Drive Sheet Creation, GitHub Push & Streamlit Deploy) <!-- id: 7 -->
-- [ ] Step 1: Create live Google Sheet in user's Google Drive via `google-workspace` MCP and seed initial cards
-- [ ] Step 2: Initialize Git repo, create `.gitignore`, and commit all codebase files
-- [ ] Step 3: Create GitHub repository `chuductu-ui/echokids-english` using `gh repo create` and push to GitHub
-- [ ] Step 4: Ensure `streamlit_app.py` is configured with Google Sheet ID and live sync
-- [ ] Step 5: Provide 1-click Streamlit Cloud deployment link and verify complete workflow
-- **Status**: in_progress
+- [x] Step 1: Create live Google Sheet in user's Google Drive via `google-workspace` MCP and seed initial cards (`EchoKids English - Learning Database`, ID: `1LU4SAghihRdM_ivhDizHLKi6vKPVlYL2ppHWNrUhJ_c`)
+- [x] Step 2: Initialize Git repo, create `.gitignore`, and commit all codebase files
+- [x] Step 3: Create GitHub repository `chuductu-ui/echokids-english` using `gh repo create` and push to GitHub
+- [x] Step 4: Ensure `streamlit_app.py` is configured with Google Sheet ID and live sync
+- [x] Step 5: Provide 1-click Streamlit Cloud deployment link and verify complete workflow
+- **Status**: complete
+
+### Phase 9: Library Vietnamese-First Flip Cards & Google Drive Folder Relocation <!-- id: 8 -->
+- [x] Move Google Sheet to target Google Drive folder `1OfwAewoRPK-xGAH_O-UUQk577GK3XymP` via `google-workspace` MCP
+- [x] Update `streamlit_app.py`: Design "My Library" cards to show Vietnamese ONLY by default, with an interactive "Flip Card" button that reveals the English version, audio player, example sentence, and IPA
+- [x] Update `static/app.js`: Design "My Library" cards in FastAPI frontend to show Vietnamese ONLY by default with 1-click flip card toggle to English
+- [x] Update documentation and README links with target Google Drive folder information
+- [x] Commit all modifications to Git and push to GitHub repository `chuductu-ui/echokids-english`
+- **Status**: complete
 
 ---
 
