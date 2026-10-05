@@ -476,85 +476,9 @@ with tab_review:
 with tab_input:
     st.subheader(f"➕ Thêm thẻ mới - {active_profile['name']}")
     
-    # Web Speech API Voice Recognition Component
-    st.components.v1.html("""
-    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #fff7ed; padding: 12px 14px; border-radius: 16px; border: 1.5px solid #fed7aa; margin-bottom: 12px;">
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-        <span style="font-size: 13px; font-weight: 800; color: #9a3412;">🎙️ Nhập bằng giọng nói (Voice Input):</span>
-        <span id="speechIndicator" style="font-size: 11px; font-weight: bold; color: #c2410c; background: #ffedd5; padding: 2px 8px; border-radius: 20px;">Sẵn sàng</span>
-      </div>
-      <div style="display: flex; gap: 8px;">
-        <button type="button" id="btnEng" onclick="startSpeech('en-US', 'English text *', this)" style="flex: 1; padding: 10px; border-radius: 12px; border: 1px solid #ea580c; background: #ea580c; color: white; font-weight: 800; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
-          🎤 Nói tiếng Anh (en-US)
-        </button>
-        <button type="button" id="btnViet" onclick="startSpeech('vi-VN', 'Vietnamese meaning *', this)" style="flex: 1; padding: 10px; border-radius: 12px; border: 1px solid #0284c7; background: #0284c7; color: white; font-weight: 800; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
-          🎤 Nói tiếng Việt (vi-VN)
-        </button>
-      </div>
-      <div id="speechResult" style="margin-top: 8px; font-size: 12px; color: #475569; font-weight: 500;">
-        💡 Bấm nút rồi nói vào micro, hệ thống tự động nhận diện và điền vào ô bên dưới.
-      </div>
-    </div>
-
-    <script>
-      function startSpeech(lang, inputLabel, btn) {
-        const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SpeechRec) {
-          alert("Trình duyệt chưa hỗ trợ Web Speech API. Vui lòng mở bằng Safari (iPad/iPhone) hoặc Chrome/Edge.");
-          return;
-        }
-        const ind = document.getElementById("speechIndicator");
-        const resBox = document.getElementById("speechResult");
-        const rec = new SpeechRec();
-        rec.lang = lang;
-        rec.interimResults = false;
-        rec.maxAlternatives = 1;
-
-        ind.innerText = "🔴 Đang nghe...";
-        ind.style.background = "#fee2e2";
-        ind.style.color = "#dc2626";
-        resBox.innerHTML = "<i>Đang lắng nghe giọng của bạn, hãy nói to rõ...</i>";
-
-        rec.onresult = function(event) {
-          const text = event.results[0][0].transcript;
-          ind.innerText = "✅ Đã xong";
-          ind.style.background = "#dcfce7";
-          ind.style.color = "#16a34a";
-          resBox.innerHTML = "✅ Đã nhận diện: <b>" + text + "</b>";
-
-          if (navigator.clipboard) {
-            navigator.clipboard.writeText(text);
-          }
-
-          try {
-            const doc = window.parent.document;
-            const inputs = doc.querySelectorAll("input");
-            for (let inp of inputs) {
-              if (inp.getAttribute("aria-label") === inputLabel) {
-                inp.value = text;
-                inp.dispatchEvent(new Event('input', { bubbles: true }));
-                inp.dispatchEvent(new Event('change', { bubbles: true }));
-                break;
-              }
-            }
-          } catch(e) {}
-        };
-
-        rec.onerror = function(err) {
-          ind.innerText = "Thử lại";
-          ind.style.background = "#f1f5f9";
-          ind.style.color = "#64748b";
-          resBox.innerText = "Chưa nghe rõ hoặc chưa bật quyền Micro. Vui lòng thử lại.";
-        };
-
-        rec.start();
-      }
-    </script>
-    """, height=125)
-    
     with st.form("add_item_form", clear_on_submit=True):
-        f_eng = st.text_input("English text *", placeholder="Nhập hoặc nói từ/câu tiếng Anh...")
-        f_viet = st.text_input("Vietnamese meaning *", placeholder="Nhập hoặc nói nghĩa tiếng Việt...")
+        f_eng = st.text_input("English text *", placeholder="Nhập từ hoặc câu tiếng Anh...")
+        f_viet = st.text_input("Vietnamese meaning *", placeholder="Nhập nghĩa tiếng Việt...")
         recorded_audio = st.audio_input("Record audio (Ghi âm giọng đọc)")
         
         submitted = st.form_submit_button("💾 Lưu thẻ", type="primary", use_container_width=True)
