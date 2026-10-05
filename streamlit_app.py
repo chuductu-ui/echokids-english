@@ -93,6 +93,33 @@ def init_local_db():
     )
     """)
     conn.commit()
+
+    # Cloud Auto-Seed Safeguard: Ensure starter data exists if fresh container
+    cursor.execute("SELECT COUNT(*) FROM profiles")
+    if cursor.fetchone()[0] == 0:
+        latest_path = os.path.join(ARCHIVE_DIR, "echokids_online_backup_latest.json")
+        if os.path.exists(latest_path):
+            try:
+                with open(latest_path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                for p in data.get("profiles", []):
+                    cursor.execute("""
+                    INSERT OR IGNORE INTO profiles (id, name, age, avatar, color_theme, daily_goal, streak_days, last_study_date)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    """, (p["id"], p["name"], p["age"], p["avatar"], p.get("color_theme", "purple"), p.get("daily_goal", 10), p.get("streak_days", 0), p.get("last_study_date", "")))
+                for itm in data.get("items", []):
+                    cursor.execute("""
+                    INSERT OR IGNORE INTO items (id, profile_id, item_type, english_text, ipa_phonetic, vietnamese_meaning, example_sentence, context_note, created_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """, (itm["id"], itm["profile_id"], itm["item_type"], itm["english_text"], itm.get("ipa_phonetic", ""), itm["vietnamese_meaning"], itm.get("example_sentence", ""), itm.get("context_note", ""), itm["created_at"]))
+                for c in data.get("srs_cards", []):
+                    cursor.execute("""
+                    INSERT OR IGNORE INTO srs_cards (id, item_id, profile_id, step, interval_days, ease_factor, repetitions, lapses, state, due_date, last_reviewed_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """, (c["id"], c["item_id"], c["profile_id"], c.get("step", 0), c.get("interval_days", 0), c.get("ease_factor", 2.5), c.get("repetitions", 0), c.get("lapses", 0), c.get("state", "new"), c["due_date"], c.get("last_reviewed_at", "")))
+                conn.commit()
+            except Exception:
+                pass
     conn.close()
 
 init_local_db()
@@ -151,6 +178,11 @@ def load_profiles():
     cursor.execute("SELECT * FROM profiles ORDER BY age ASC")
     profiles = [dict(r) for r in cursor.fetchall()]
     conn.close()
+    if not profiles:
+        return [
+            {"id": 1, "name": "Bunny Leo", "age": 7, "avatar": "🐰", "color_theme": "amber", "daily_goal": 8, "streak_days": 3, "last_study_date": ""},
+            {"id": 2, "name": "Alex Rocket", "age": 11, "avatar": "🚀", "color_theme": "indigo", "daily_goal": 12, "streak_days": 5, "last_study_date": ""}
+        ]
     return profiles
 
 def get_profile_counts(profile_id: int):
